@@ -45,4 +45,128 @@ class RepairRequestController extends Controller
             'requests' => $requests
         ]);
     }
+
+    //FETCH CONTRACTOR JOBS
+    public function contractorRequests()
+    {
+        if (auth()->user()->role !== 'contractor') {
+            abort(403);
+        }
+
+        $requests = \App\Models\RepairRequest::where('contractor_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return \Inertia\Inertia::render('Contractor/Dashboard', [
+            'requests' => $requests
+        ]);
+    }
+
+    //Accepting a request by contractor    
+    public function accept($id)
+    {
+        $request = \App\Models\RepairRequest::findOrFail($id);
+
+        if (auth()->user()->role !== 'contractor') {
+            abort(403);
+        }
+
+        if ($request->contractor_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $request->status = 'accepted';
+        $request->save();
+
+        return back();
+    }
+
+    //Starting a request by contractor
+    public function start($id)
+    {
+        $request = RepairRequest::findOrFail($id);
+
+        // Only contractor
+        if (auth()->user()->role !== 'contractor') {
+            abort(403);
+        }
+
+        // Must be assigned contractor
+        if ($request->contractor_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Only start if accepted
+        if ($request->status !== 'accepted') {
+            return back();
+        }
+
+        $request->status = 'in_progress';
+        $request->save();
+
+        return back();
+    }
+
+    //Declining a request by contractor
+    public function decline($id)
+    {
+        $request = \App\Models\RepairRequest::findOrFail($id);
+
+        if (auth()->user()->role !== 'contractor') {
+            abort(403);
+        }
+
+        if ($request->contractor_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $request->status = 'declined';
+        $request->contractor_id = null;
+        $request->save();
+
+        return back();
+    }
+
+    //Completing a request by contractor
+    public function complete($id)
+    {
+        $request = \App\Models\RepairRequest::findOrFail($id);
+
+        if (auth()->user()->role !== 'contractor') {
+            abort(403);
+        }
+
+        if ($request->contractor_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($request->status !== 'in_progress') {
+            return back();
+        }
+        $request->status = 'awaiting_confirmation';
+        $request->save();
+
+        return back();
+    }
+
+    //Confirming completion by tenant
+    public function confirm($id)
+    {
+        $request = RepairRequest::findOrFail($id);
+
+        // Only tenant who created request
+        if ($request->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        // Only confirm if awaiting confirmation
+        if ($request->status !== 'awaiting_confirmation') {
+            return back();
+        }
+
+        $request->status = 'completed';
+        $request->save();
+
+        return back();
+    }
 }

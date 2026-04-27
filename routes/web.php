@@ -35,9 +35,9 @@ Route::get('/dashboard', function () {
         return Inertia::render('Dashboard'); // existing
     }
 
-    if ($user->role === 'contractor') {
-        return Inertia::render('Contractor/Dashboard');
-    }
+    if ($user->role === 'contractor') {//Newly added
+    return redirect()->route('contractor.dashboard');
+}
 
     if ($user->role === 'admin') {
         return Inertia::render('Admin/Dashboard');
@@ -93,6 +93,27 @@ Route::get('/select-contractor/{id}', [ContractorSelectionController::class, 'in
 Route::post('/assign-contractor/{id}', [ContractorSelectionController::class, 'assign'])
     ->middleware('auth');
 
+// Contractor routes(Newly added)
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/contractor/dashboard', [RepairRequestController::class, 'contractorRequests'])
+        ->name('contractor.dashboard');
+
+    Route::post('/requests/{id}/accept', [RepairRequestController::class, 'accept'])
+        ->name('requests.accept');
+
+    Route::post('/requests/{id}/decline', [RepairRequestController::class, 'decline'])
+        ->name('requests.decline');
+
+    Route::post('/requests/{id}/complete', [RepairRequestController::class, 'complete'])
+        ->name('requests.complete');
+    // ✅ ADD THESE TWO HERE
+    Route::post('/requests/{id}/start', [RepairRequestController::class, 'start'])
+        ->name('requests.start');
+
+    Route::post('/requests/{id}/confirm', [RepairRequestController::class, 'confirm'])
+        ->name('requests.confirm');
+});
 //Displaying tenants requests
 Route::get('/my-requests', [RepairRequestController::class, 'myRequests'])
     ->middleware(['auth']);
