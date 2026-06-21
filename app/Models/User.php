@@ -22,7 +22,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'status'
+        'status',
+        'phone',  // Added phone to fillable attributes
     ];
 
     /**

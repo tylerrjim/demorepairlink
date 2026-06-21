@@ -36,8 +36,8 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->role === 'contractor') {//Newly added
-    return redirect()->route('contractor.dashboard');
-}
+        return redirect()->route('contractor.dashboard');
+    }
 
     if ($user->role === 'admin') {
         return Inertia::render('Admin/Dashboard');
@@ -107,14 +107,33 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/requests/{id}/complete', [RepairRequestController::class, 'complete'])
         ->name('requests.complete');
-    // ✅ ADD THESE TWO HERE
+
     Route::post('/requests/{id}/start', [RepairRequestController::class, 'start'])
         ->name('requests.start');
 
     Route::post('/requests/{id}/confirm', [RepairRequestController::class, 'confirm'])
         ->name('requests.confirm');
+
+    // ✅ NEW WORKFLOW ROUTE: Contractor proposes inspection price
+    Route::post('/requests/{id}/submit-price', [RepairRequestController::class, 'submitPrice'])
+        ->name('requests.submit-price');
+
+    // ✅ NEW WORKFLOW ROUTE: Tenant confirms price to start work
+    Route::post('/requests/{id}/confirm-price', [RepairRequestController::class, 'confirmPrice'])
+        ->name('requests.confirm-price');
 });
+
 //Displaying tenants requests
 Route::get('/my-requests', [RepairRequestController::class, 'myRequests'])
     ->middleware(['auth']);
+
+// Cancelling a request
+Route::post('/requests/{id}/cancel', [RepairRequestController::class, 'cancel'])
+    ->middleware(['auth'])
+    ->name('requests.cancel');
+
+// Handles resetting a contractor relationship when a tenant clicks 
+// "Change Contractor" (on accepted requests) or "Select New Contractor" (on declined requests)
+Route::post('/requests/{id}/change-contractor', [RepairRequestController::class, 'changeContractor'])->middleware(['auth']);
+
 require __DIR__.'/auth.php';

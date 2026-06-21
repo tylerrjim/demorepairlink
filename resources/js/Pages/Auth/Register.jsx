@@ -9,6 +9,7 @@ export default function Register() {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
+        phone: '', // ✅ INITIALIZED STATE PROPERTY FOR THE USER CONTEXT
         password: '',
         password_confirmation: '',
     });
@@ -26,6 +27,7 @@ export default function Register() {
             <Head title="Register" />
 
             <form onSubmit={submit}>
+                {/* NAME FIELD */}
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
 
@@ -43,6 +45,7 @@ export default function Register() {
                     <InputError message={errors.name} className="mt-2" />
                 </div>
 
+                {/* EMAIL FIELD */}
                 <div className="mt-4">
                     <InputLabel htmlFor="email" value="Email" />
 
@@ -60,6 +63,26 @@ export default function Register() {
                     <InputError message={errors.email} className="mt-2" />
                 </div>
 
+                {/* ✅ UPDATED COMPONENT: PHONE NUMBER FIELD */}
+                <div className="mt-4">
+                    <InputLabel htmlFor="phone" value="Phone Number" />
+
+                    <TextInput
+                        id="phone"
+                        type="text"
+                        name="phone"
+                        value={data.phone}
+                        className="mt-1 block w-full"
+                        autoComplete="tel"
+                        placeholder="07XXXXXXXX"
+                        onChange={(e) => setData('phone', e.target.value)}
+                        required
+                    />
+
+                    <InputError message={errors.phone} className="mt-2" />
+                </div>
+
+                {/* PASSWORD FIELD */}
                 <div className="mt-4">
                     <InputLabel htmlFor="password" value="Password" />
 
@@ -77,6 +100,7 @@ export default function Register() {
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
+                {/* CONFIRM PASSWORD FIELD */}
                 <div className="mt-4">
                     <InputLabel
                         htmlFor="password_confirmation"
@@ -102,6 +126,7 @@ export default function Register() {
                     />
                 </div>
 
+                {/* SUBMIT ROW */}
                 <div className="mt-4 flex items-center justify-end">
                     <Link
                         href={route('login')}
