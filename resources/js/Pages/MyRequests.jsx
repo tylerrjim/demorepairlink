@@ -1,21 +1,16 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import { useState } from 'react'; // Added to hold the checkout prompt number locally
 
 export default function MyRequests({ requests }) {
-    // Track manual number override for checkout execution
-    const [phoneNumbers, setPhoneNumbers] = useState({});
 
     // ✅ Tenant confirms completed job (Moves status to awaiting_payment)
     function confirm(id) {
         router.post(`/requests/${id}/confirm`);
     }
 
-    // ✅ Tenant initiates mock payment process (Moves status to paid)
+    // ✅ Tenant initiates payment process (Will route to M-Pesa controller trigger later)
     function handleMockPayment(id) {
-        const phone = phoneNumbers[id] || '';
-        // In the future, this endpoint can point to your Mpesa controller method
-        router.post(`/requests/${id}/confirm`, { phone: phone });
+        router.post(`/requests/${id}/pay`);
     }
 
     // ✅ Tenant cancels request
@@ -32,10 +27,6 @@ export default function MyRequests({ requests }) {
     function confirmPrice(id) {
         router.post(`/requests/${id}/confirm-price`);
     }
-
-    const handlePhoneChange = (requestId, value) => {
-        setPhoneNumbers(prev => ({ ...prev, [requestId]: value }));
-    };
 
     return (
         <AuthenticatedLayout
@@ -149,7 +140,7 @@ export default function MyRequests({ requests }) {
                                         className="mt-3 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded text-sm font-semibold shadow-sm transition-colors"
                                     >
                                         Confirm Price & Authorize Work
-                    </button>
+                                    </button>
                                 </div>
                             )}
 
@@ -179,37 +170,33 @@ export default function MyRequests({ requests }) {
                                         className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-medium shadow-sm transition-colors"
                                     >
                                         Confirm Completion
-                    </button>
+                                    </button>
                                 </div>
                             )}
 
-                            {/* ✅ NEW STATE: AWAITING PAYMENT */}
+                            {/* ✅ STYLED STATE: READ-ONLY AUTO-ROUTED AWAITING PAYMENT PANEL */}
                             {req.status === 'awaiting_payment' && (
-                                <div className="mt-3 p-4 bg-pink-50 border border-pink-200 rounded-md max-w-md">
-                                    <h4 className="text-pink-800 font-bold text-sm">✔ Work Completed & Confirmed</h4>
-                                    <p className="text-gray-700 text-base mt-2">
-                                        <strong>Amount Due:</strong> KES {req.agreed_price}
+                                <div className="mt-3 p-4 bg-pink-50 border border-pink-200 rounded-lg max-w-md shadow-sm">
+                                    <h4 className="text-pink-800 font-bold text-sm flex items-center gap-1">
+                                        ✔ Work Completed & Verified
+                                    </h4>
+                                    <p className="text-gray-700 text-sm mt-2">
+                                        <strong>Amount Due:</strong> <span className="text-base font-bold text-gray-900">KES {req.agreed_price}</span>
                                     </p>
                                     
-                                    <div className="mt-3">
-                                        <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">
-                                            Enter M-Pesa Phone Number:
-                    </label>
-                                        <input
-                                            type="text"
-                                            placeholder="07XXXXXXXX"
-                                            className="border rounded px-3 py-1.5 text-sm w-full focus:outline-pink-500"
-                                            value={phoneNumbers[req.id] || ''}
-                                            onChange={(e) => handlePhoneChange(req.id, e.target.value)}
-                                        />
+                                    <div className="mt-3 p-2 bg-white rounded border border-pink-100 text-xs text-gray-600">
+                                        <p>The M-Pesa STK Push authorization prompt will be dispatched automatically to your profile number:</p>
+                                        <p className="mt-1 text-sm font-mono font-bold text-gray-800 tracking-wide">
+                                            📱 {req.user?.phone || 'No phone record bound'}
+                                        </p>
                                     </div>
 
                                     <button
                                         onClick={() => handleMockPayment(req.id)}
-                                        className="mt-3 w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded text-sm font-bold shadow-sm transition-colors"
+                                        className="mt-4 w-full bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-md text-sm font-bold shadow-sm transition-colors"
                                     >
-                                        Pay Now
-                    </button>
+                                        Confirm & Send STK Push
+                                    </button>
                                 </div>
                             )}
 
@@ -228,10 +215,8 @@ export default function MyRequests({ requests }) {
                                 </p>
                             )}
 
-
-                            {/* ================= ACTION BUTTONS ================= */}
+                            {/* ================= ACTIONS FOOTER ================= */}
                             <div className="flex gap-3 mt-4">
-                                {/* TENANT CAN CANCEL BEFORE PHYSICAL REPAIR WORK STARTS */}
                                 {(req.status === 'pending' || 
                                   req.status === 'accepted' || 
                                   req.status === 'inspection' || 
@@ -245,7 +230,6 @@ export default function MyRequests({ requests }) {
                                     </button>
                                 )}
 
-                                {/* TENANT CAN SELECT NEW CONTRACTOR ONLY IF DECLINED */}
                                 {req.status === 'declined' && (
                                     <button
                                         onClick={() => changeContractor(req.id)}

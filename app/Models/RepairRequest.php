@@ -13,7 +13,8 @@ class RepairRequest extends Model
         'title',
         'description',
         'category',
-        'location',          // ✅ MUST BE HERE
+        'location',          
+        'landmark',          // ✅ ADD THIS: To store neighborhood landmarks
         'scheduled_date', 
         'status',
         'agreed_price',
@@ -36,5 +37,13 @@ class RepairRequest extends Model
     public function contractor()
     {
         return $this->belongsTo(User::class, 'contractor_id');
+    }
+
+    /**
+     * ✅ ADD THIS RELATIONSHIP: A repair request can have multiple payment record attempts.
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
     }
 }

@@ -17,6 +17,7 @@ class RepairRequestController extends Controller
             abort(403, 'Unauthorized');
         }
 
+        // 🟢 'landmark' validation rule completely removed
         $data = $request->validate([
             'title' => 'required|string',
             'description' => 'required|string',
@@ -25,6 +26,7 @@ class RepairRequestController extends Controller
             'scheduled_date' => 'required|date',
         ]);
 
+        // 🟢 Removed 'landmark' from the Eloquent mass-assignment array
         $repair = RepairRequest::create([
             'user_id' => auth()->id(),
             'title' => $data['title'],
@@ -43,7 +45,8 @@ class RepairRequestController extends Controller
      */
     public function myRequests()
     {
-        $requests = RepairRequest::with('contractor')
+        // Eager loads 'user' alongside 'contractor' to feed phone string context to React
+        $requests = RepairRequest::with(['contractor', 'user'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -245,7 +248,7 @@ class RepairRequestController extends Controller
 
     /**
      * Confirm job completion by tenant.
-     * UPDATED: Advances state to 'awaiting_payment' instead of sealing the job early.
+     * Advances state to 'awaiting_payment' instead of sealing the job early.
      */
     public function confirm($id)
     {
@@ -259,7 +262,6 @@ class RepairRequestController extends Controller
             return back();
         }
 
-        // ✅ FIXED: Changes to awaiting_payment to pause the flow for M-Pesa
         $request->status = 'awaiting_payment';
         $request->save();
 

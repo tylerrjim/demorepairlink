@@ -5,6 +5,7 @@ use App\Http\Controllers\ContractorRegisterController;
 use App\Http\Controllers\Admin\ContractorApprovalController;
 use App\Http\Controllers\RepairRequestController;
 use App\Http\Controllers\ContractorSelectionController;
+use App\Http\Controllers\PaymentController; // ✅ IMPORTED PAYMENT CONTROLLER
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +36,7 @@ Route::get('/dashboard', function () {
         return Inertia::render('Dashboard'); // existing
     }
 
-    if ($user->role === 'contractor') {//Newly added
+    if ($user->role === 'contractor') { // Newly added
         return redirect()->route('contractor.dashboard');
     }
 
@@ -67,13 +68,13 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.contractors.reject');
 });
 
-// Contractor registration Makosa ikifanyika ni hapa
+// Contractor registration
 Route::middleware('guest')->group(function () {
     Route::get('/register/contractor', [ContractorRegisterController::class, 'create'])
-        ->name('contractor.register'); // Added this name
+        ->name('contractor.register'); 
         
     Route::post('/register/contractor', [ContractorRegisterController::class, 'store'])
-        ->name('contractor.store');    // Added this name
+        ->name('contractor.store');    
 });
 
 // Repair requests
@@ -93,7 +94,7 @@ Route::get('/select-contractor/{id}', [ContractorSelectionController::class, 'in
 Route::post('/assign-contractor/{id}', [ContractorSelectionController::class, 'assign'])
     ->middleware('auth');
 
-// Contractor routes(Newly added)
+// Contractor routes
 Route::middleware(['auth'])->group(function () {
 
     Route::get('/contractor/dashboard', [RepairRequestController::class, 'contractorRequests'])
@@ -114,16 +115,16 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/requests/{id}/confirm', [RepairRequestController::class, 'confirm'])
         ->name('requests.confirm');
 
-    // ✅ NEW WORKFLOW ROUTE: Contractor proposes inspection price
+    // NEW WORKFLOW ROUTE: Contractor proposes inspection price
     Route::post('/requests/{id}/submit-price', [RepairRequestController::class, 'submitPrice'])
         ->name('requests.submit-price');
 
-    // ✅ NEW WORKFLOW ROUTE: Tenant confirms price to start work
+    // NEW WORKFLOW ROUTE: Tenant confirms price to start work
     Route::post('/requests/{id}/confirm-price', [RepairRequestController::class, 'confirmPrice'])
         ->name('requests.confirm-price');
 });
 
-//Displaying tenants requests
+// Displaying tenants requests
 Route::get('/my-requests', [RepairRequestController::class, 'myRequests'])
     ->middleware(['auth']);
 
@@ -133,7 +134,12 @@ Route::post('/requests/{id}/cancel', [RepairRequestController::class, 'cancel'])
     ->name('requests.cancel');
 
 // Handles resetting a contractor relationship when a tenant clicks 
-// "Change Contractor" (on accepted requests) or "Select New Contractor" (on declined requests)
-Route::post('/requests/{id}/change-contractor', [RepairRequestController::class, 'changeContractor'])->middleware(['auth']);
+Route::post('/requests/{id}/change-contractor', [RepairRequestController::class, 'changeContractor'])
+    ->middleware(['auth']);
+
+// ✅ ADDED FOR STEP 4: End point triggering the M-Pesa STK Push
+Route::post('/requests/{id}/pay', [PaymentController::class, 'initiatePayment'])
+    ->middleware(['auth'])
+    ->name('payment.initiate');
 
 require __DIR__.'/auth.php';
