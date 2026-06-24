@@ -1,0 +1,142 @@
+import React from 'react';
+import { Head, Link } from '@inertiajs/react';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+
+// ✅ UNIVERSAL ICON WRAPPER
+const Icon = ({ name, className = '' }) => (
+    <span className={`material-symbols-outlined text-xl ${className}`}>
+        {name}
+    </span>
+);
+
+export default function ContractorsList({ auth, contractors = [], pending_approvals_count = 0 }) {
+    
+    // ✅ FIXED FILTER: Checks for 'active' to match your database ENUM mapping perfectly
+    const activeContractors = contractors.filter(c => c.status === 'active');
+
+    return (
+        <AuthenticatedLayout 
+            header={
+                <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
+                    System Control Center
+                </h2>
+            }
+        >
+            <Head title="Verified Contractors" />
+
+            <div className="bg-[#f8fafc] dark:bg-gray-900 text-[#191c1e] font-sans min-h-[calc(100vh-65px)] flex flex-col md:flex-row">
+
+                {/* ================= SIDEBAR NAVIGATION (UNIFORM DESIGN TOKENS) ================= */}
+                <aside className="hidden md:flex flex-col h-full w-[280px] bg-slate-50 dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 py-6 z-40">
+                    <div className="px-6 mb-8">
+                        <span className="text-2xl font-bold text-slate-800 dark:text-white">
+                            RepairLink <span className="text-xs text-blue-600 font-bold uppercase tracking-wider">Admin</span>
+                        </span>
+                    </div>
+
+                    <nav className="flex-1 space-y-1">
+                        <NavLink href="/dashboard" icon="dashboard" active={false}>Dashboard</NavLink>
+                        <NavLink href="/admin/contractors" icon="engineering" active={true}>Contractors</NavLink>
+                        <NavLink href="/admin/contractors/approvals" icon="verified_user" active={false}>
+                            Approvals
+                            {pending_approvals_count > 0 && (
+                                <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                                    {pending_approvals_count}
+                                </span>
+                            )}
+                        </NavLink>
+                    </nav>
+                </aside>
+
+                {/* ================= MAIN CONTENT ================= */}
+                <main className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
+
+                    {/* REGISTRY BANNER */}
+                    <div className="mb-10 p-6 sm:p-10 bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl shadow-lg text-white border border-slate-700 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Icon name="engineering" className="text-[120px]" />
+                        </div>
+                        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-3xl font-extrabold tracking-tight">Verified Trade Masters</h3>
+                                <p className="text-slate-400 text-sm mt-2 max-w-xl">
+                                    Database index of all active field specialists approved to accept residential maintenance requests across the platform network ecosystem.
+                                </p>
+                            </div>
+                            
+                            <div className="flex items-center gap-2 bg-slate-700/50 border border-slate-600 px-4 py-2 rounded-xl self-start sm:self-auto shadow-inner">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                                    {activeContractors.length} Verified Operators
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* REGISTRY LIST */}
+                    <div className="space-y-4 max-w-4xl">
+                        {activeContractors.length > 0 ? (
+                            activeContractors.map((contractor) => (
+                                <div 
+                                    key={contractor.id} 
+                                    className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center justify-between"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                                            <Icon name="verified" className="text-2xl" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-lg font-bold text-gray-900 dark:text-white">{contractor.name}</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono mt-0.5">{contractor.email}</p>
+                                            
+                                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                                                <span className="flex items-center gap-1 font-mono font-bold text-gray-700 dark:text-gray-300">
+                                                    📱 {contractor.phone || 'No Phone Registered'}
+                                                </span>
+                                                <span>•</span>
+                                                <span className="capitalize px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-semibold text-gray-600 dark:text-gray-400">
+                                                    🛠️ {contractor.category || 'General Maintenance'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <span className="hidden sm:inline-block px-3 py-1.5 text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/40 rounded-lg tracking-wider">
+                                        Active Profile
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            /* EMPTY REGISTRY STATE */
+                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-6 shadow-sm text-center">
+                                <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-gray-700 flex items-center justify-center mb-4 text-slate-400 dark:text-slate-500">
+                                    <Icon name="person_search" className="text-3xl" />
+                                </div>
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white">Registry Empty</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+                                    There are currently no approved contractor nodes inside the production network layout database.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
+                </main>
+            </div>
+        </AuthenticatedLayout>
+    );
+}
+
+// Sidebar Navigation Link Component
+const NavLink = ({ href, icon, children, active }) => (
+    <Link 
+        href={href} 
+        className={`w-[calc(100%-24px)] text-left rounded-xl mx-3 px-4 py-3.5 flex items-center gap-3 transition-all ${
+            active 
+                ? 'bg-[#d5e3fc] text-[#0d1c2e] translate-x-1 font-bold border-l-4 border-slate-800' 
+                : 'text-[#434655] hover:bg-slate-100 dark:hover:bg-gray-800'
+        }`}
+    >
+        <Icon name={icon} className={active ? 'text-slate-800' : 'text-slate-400'} />
+        <span className="text-sm font-medium flex items-center w-full">{children}</span>
+    </Link>
+);

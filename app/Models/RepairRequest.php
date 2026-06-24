@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Payment;
+use App\Models\Review;
 
 class RepairRequest extends Model
 {
@@ -14,7 +16,7 @@ class RepairRequest extends Model
         'description',
         'category',
         'location',          
-        'landmark',          // ✅ ADD THIS: To store neighborhood landmarks
+        'landmark',          // To store neighborhood landmarks
         'scheduled_date', 
         'status',
         'agreed_price',
@@ -40,10 +42,18 @@ class RepairRequest extends Model
     }
 
     /**
-     * ✅ ADD THIS RELATIONSHIP: A repair request can have multiple payment record attempts.
+     * A repair request can have multiple payment record attempts.
      */
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * ✅ ADDED FOR STEP 2: A repair request can have one rating/review feedback entry.
+     */
+    public function review()
+    {
+        return $this->hasOne(Review::class, 'repair_request_id');
     }
 }

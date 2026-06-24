@@ -118,11 +118,17 @@ class PaymentController extends Controller
                         $payment->repairRequest->update(['status' => 'paid']);
                         Log::info("Payment Successfully Saved for Checkout Request: {$checkoutRequestId}. Receipt: {$mpesaReceipt}");
                     } else {
-                        // 🔴 Hard failures (e.g., user explicitly cancelled or wrong PIN)
+                        // 🔴 HARD FAILURES: User explicitly cancelled (1032), wrong PIN, or balance issues
                         $payment->update([
                             'status'             => 'failed',
                             'result_description' => $resultDesc         // ✅ Fixed Schema Sync
                         ]);
+
+                        // ✅ THE CRITICAL FIX: Explicitly revert ticket state so the button unlocks for re-attempts
+                        if ($payment->repairRequest) {
+                            $payment->repairRequest->update(['status' => 'awaiting_payment']);
+                        }
+
                         Log::warning("Payment Failed/Cancelled for Checkout Request: {$checkoutRequestId}. Reason: {$resultDesc}");
                     }
                 }

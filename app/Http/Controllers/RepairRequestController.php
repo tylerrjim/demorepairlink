@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\RepairRequest;
+use App\Models\Review; // ✅ IMPORTED REVIEW MODEL
 use Inertia\Inertia;
 
 class RepairRequestController extends Controller
@@ -17,16 +18,15 @@ class RepairRequestController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        // 🟢 'landmark' validation rule completely removed
         $data = $request->validate([
             'title' => 'required|string',
             'description' => 'required|string',
             'category' => 'required|string',
             'location' => 'required',
-            'scheduled_date' => 'required|date',
+            // ✅ FIXED: Enforces that the selected date must be today or a future date
+            'scheduled_date' => 'required|date|after_or_equal:today',
         ]);
 
-        // 🟢 Removed 'landmark' from the Eloquent mass-assignment array
         $repair = RepairRequest::create([
             'user_id' => auth()->id(),
             'title' => $data['title'],
@@ -45,8 +45,8 @@ class RepairRequestController extends Controller
      */
     public function myRequests()
     {
-        // Eager loads 'user' alongside 'contractor' to feed phone string context to React
-        $requests = RepairRequest::with(['contractor', 'user'])
+        // Added 'review' relation to the eager-loading array to track feedback status
+        $requests = RepairRequest::with(['contractor', 'user', 'review'])
             ->where('user_id', auth()->id())
             ->latest()
             ->get();
@@ -65,13 +65,23 @@ class RepairRequestController extends Controller
             abort(403);
         }
 
+        // 1. Fetch requests assigned to this contractor
         $requests = RepairRequest::with('user')
             ->where('contractor_id', auth()->id())
             ->latest()
             ->get();
 
+        // 2. ✅ UPDATED FOR STEP 5: Fetch reviews left by tenants with their corresponding user rows
+        $reviews = Review::with('tenant')
+            ->where('contractor_id', auth()->id())
+            ->latest()
+            ->get();
+
+        // 3. ✅ UPDATED FOR STEP 5: Render the dashboard workspace view passing all critical aggregate indicators
         return Inertia::render('Contractor/Dashboard', [
-            'requests' => $requests
+            'requests'       => $requests,
+            'reviews'        => $reviews,
+            'average_rating' => auth()->user()->average_rating // Calculates rolling score from User model accessor
         ]);
     }
 
@@ -289,5 +299,34 @@ class RepairRequestController extends Controller
         ]);
 
         return redirect("/select-contractor/{$request->id}");
+    }
+
+    /**
+     * ✅ NEW FEATURE: Handle a contractor backing out/withdrawing during the live site inspection phase.
+     * Reverts the system ticket back to public pending status pools for tenant re-selection.
+     */
+    public function withdrawFromInspection($id)
+    {
+        $request = RepairRequest::findOrFail($id);
+
+        if (auth()->user()->role !== 'contractor') {
+            abort(403, 'Unauthorized role access.');
+        }
+
+        if ($request->contractor_id !== auth()->id()) {
+            abort(403, 'Unauthorized relationship constraint.');
+        }
+
+        // Only allow withdrawal before a final price binding contract is locked in progress
+        if ($request->status === 'accepted' || $request->status === 'inspection') {
+            $request->update([
+                'contractor_id' => null,     // Detach contractor mapping index
+                'status'        => 'pending' // Bounce back to open queue pools
+            ]);
+
+            return back()->with('success', 'Workspace session closed. Request returned to open pools.');
+        }
+
+        return back()->with('error', 'Action unauthorized under current lifecycle parameters.');
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\ContractorApprovalController;
 use App\Http\Controllers\RepairRequestController;
 use App\Http\Controllers\ContractorSelectionController;
 use App\Http\Controllers\PaymentController; // ✅ IMPORTED PAYMENT CONTROLLER
+use App\Http\Controllers\ReviewController;  // ✅ IMPORTED REVIEW CONTROLLER
+use App\Models\User; // ✅ IMPORTED USER FOR DASHBOARD REAL-TIME COUNTS
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -41,7 +43,14 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->role === 'admin') {
-        return Inertia::render('Admin/Dashboard');
+        // ✅ FETCH REAL-TIME COUNT TO PREVENT BLANK SIDEBAR NOTIFICATION BUBBLES
+        $pendingCount = User::where('role', 'contractor')
+            ->where('status', 'pending')
+            ->count();
+
+        return Inertia::render('Admin/Dashboard', [
+            'pending_approvals_count' => $pendingCount
+        ]);
     }
 
 })->middleware(['auth'])->name('dashboard');
@@ -55,9 +64,13 @@ Route::middleware('auth')->group(function () {
 
 // Admin routes
 Route::middleware(['auth'])->group(function () {
-    // 1. Give the index route a name
+    // 1. Give the index route a name (Loads ContractorsList.jsx)
     Route::get('/admin/contractors', [ContractorApprovalController::class, 'index'])
         ->name('admin.contractors.index');
+
+    // ✅ Dedicated Route mapping for the verification workspace queue (Loads ContractorApproval.jsx)
+    Route::get('/admin/contractors/approvals', [ContractorApprovalController::class, 'approvals'])
+        ->name('admin.contractors.approvals');
 
     // 2. Add the approve name
     Route::post('/admin/contractors/{user}/approve', [ContractorApprovalController::class, 'approve'])
@@ -70,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Contractor registration
 Route::middleware('guest')->group(function () {
+    // Corrected to use string class syntax to match your existing pattern
     Route::get('/register/contractor', [ContractorRegisterController::class, 'create'])
         ->name('contractor.register'); 
         
@@ -79,6 +93,7 @@ Route::middleware('guest')->group(function () {
 
 // Repair requests
 Route::middleware(['auth'])->group(function () {
+    // Modified destination syntax structure parameters
     Route::post('/requests', [RepairRequestController::class, 'store'])->name('requests.store');
 });
 
@@ -122,6 +137,10 @@ Route::middleware(['auth'])->group(function () {
     // NEW WORKFLOW ROUTE: Tenant confirms price to start work
     Route::post('/requests/{id}/confirm-price', [RepairRequestController::class, 'confirmPrice'])
         ->name('requests.confirm-price');
+
+    // ✅ ADDED FEATURE ROUTE: Handles contractor backing out during inspection/acceptance lifecycle phases
+    Route::post('/requests/{id}/withdraw', [RepairRequestController::class, 'withdrawFromInspection'])
+        ->name('requests.withdraw');
 });
 
 // Displaying tenants requests
@@ -137,9 +156,14 @@ Route::post('/requests/{id}/cancel', [RepairRequestController::class, 'cancel'])
 Route::post('/requests/{id}/change-contractor', [RepairRequestController::class, 'changeContractor'])
     ->middleware(['auth']);
 
-// ✅ ADDED FOR STEP 4: End point triggering the M-Pesa STK Push
+// End point triggering the M-Pesa STK Push
 Route::post('/requests/{id}/pay', [PaymentController::class, 'initiatePayment'])
     ->middleware(['auth'])
     ->name('payment.initiate');
+
+// ✅ ADDED FOR STEP 3: Route to store contractor feedback reviews
+Route::post('/reviews', [ReviewController::class, 'store'])
+    ->middleware(['auth'])
+    ->name('reviews.store');
 
 require __DIR__.'/auth.php';

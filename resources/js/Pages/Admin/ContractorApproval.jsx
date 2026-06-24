@@ -1,100 +1,126 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'; // Assuming you use Breeze's layout
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function ContractorApproval({ auth, contractors }) {
+// ✅ UNIVERSAL ICON WRAPPER
+const Icon = ({ name, className = '' }) => (
+    <span className={`material-symbols-outlined text-xl ${className}`}>
+        {name}
+    </span>
+);
+
+export default function ContractorApproval({ auth, contractors = [] }) {
     const { post, processing } = useForm();
 
     const handleApproval = (id, action) => {
-        // action will be either 'approve' or 'reject'
-        if (confirm(`Are you sure you want to ${action} this contractor?`)) {
-            post(route(`admin.contractors.${action}`, id));
+        if (confirm(`Are you sure you want to ${action} this contractor application?`)) {
+            // ✅ BULLETPROOF RAW PATH PATTERNS
+            post(`/admin/contractors/${id}/${action}`);
         }
     };
 
+    // ✅ FILTER: Only display requests requiring manual data vetting audits
+    const pendingContractors = contractors.filter(c => c.status === 'pending' || !c.status);
+
     return (
-        <div className="bg-[#f8f9fa] min-h-screen font-sans text-[#191c1d]">
-            <Head title="Contractor Approvals | RepairLink" />
+        <AuthenticatedLayout 
+            header={
+                <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
+                    System Control Center
+                </h2>
+            }
+        >
+            <Head title="Contractor Approvals" />
 
-            {/* Top AppBar */}
-            <header className="fixed top-0 w-full z-50 bg-slate-50/80 backdrop-blur-xl shadow-sm flex items-center justify-between px-6 h-20">
-                <div className="flex items-center gap-4">
-                    <h1 className="font-bold text-2xl tracking-tight text-[#003f87]">Contractor Approvals</h1>
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:block text-right">
-                        <p className="text-xs font-bold text-blue-900 uppercase tracking-widest">{auth.user.name}</p>
-                        <p className="text-[10px] text-slate-500 font-medium italic">System Administrator</p>
+            <div className="bg-[#f8fafc] dark:bg-gray-900 text-[#191c1e] font-sans min-h-[calc(100vh-65px)] flex flex-col md:flex-row">
+
+                {/* ================= SIDEBAR NAVIGATION ================= */}
+                <aside className="hidden md:flex flex-col h-full w-[280px] bg-slate-50 dark:bg-gray-900 border-r border-slate-200 dark:border-gray-700 py-6 z-40">
+                    <div className="px-6 mb-8">
+                        <span className="text-2xl font-bold text-slate-800 dark:text-white">
+                            RepairLink <span className="text-xs text-blue-600 font-bold uppercase tracking-wider">Admin</span>
+                        </span>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-[#0056b3] flex items-center justify-center text-white font-bold overflow-hidden uppercase">
-                        {auth.user.name[0]}
-                    </div>
-                </div>
-            </header>
 
-            {/* Sidebar Navigation */}
-            <aside className="hidden md:flex h-full w-72 fixed left-0 top-0 bg-slate-50 flex-col gap-2 pt-24 pb-6 z-40 border-r border-slate-200">
-                
-    
-                <nav className="flex flex-col gap-1">
-                    <NavLink href={route('dashboard')} icon="dashboard" active={false}>Dashboard</NavLink>
-                    <NavLink href="#" icon="engineering" active={false}>Contractors</NavLink>
-                    <NavLink href="#" icon="verified_user" active={true}>Approvals</NavLink>
-                    
-                </nav>
-            </aside>
+                    <nav className="flex-1 space-y-1">
+                        <NavLink href="/dashboard" icon="dashboard" active={false}>Dashboard</NavLink>
+                        <NavLink href="/admin/contractors" icon="engineering" active={false}>Contractors</NavLink>
+                        <NavLink href="/admin/contractors/approvals" icon="verified_user" active={true}>
+                            Approvals
+                            {pendingContractors.length > 0 && (
+                                <span className="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                                    {pendingContractors.length}
+                                </span>
+                            )}
+                        </NavLink>
+                    </nav>
+                </aside>
 
-            {/* Main Content */}
-            <main className="pt-28 pb-12 px-4 md:ml-72 min-h-screen">
-                <div className="max-w-[1000px] mx-auto">
-                    
-                    {/* Header Section */}
-                    <div className="mb-12">
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                {/* ================= MAIN CONTENT ================= */}
+                <main className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
+
+                    {/* MANAGEMENT BANNER */}
+                    <div className="mb-10 p-6 sm:p-10 bg-gradient-to-r from-slate-800 to-slate-900 rounded-3xl shadow-lg text-white border border-slate-700 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-4 opacity-10">
+                            <Icon name="verified_user" className="text-[120px]" />
+                        </div>
+                        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">Contractor Approvals</h2>
-                                <p className="text-slate-500 mt-2 max-w-xl">Review and manage contractor registration requests. All contractors must be vetted before accessing the network.</p>
+                                <h3 className="text-3xl font-extrabold tracking-tight">Contractor Approvals Queue</h3>
+                                <p className="text-slate-400 text-sm mt-2 max-w-xl">
+                                    Review submission metrics, analyze specific skill domains, and grant application listings permission tokens over the public wire.
+                                </p>
                             </div>
-                            <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-xl">
-                                <span className="w-2 h-2 rounded-full bg-green-600"></span>
-                                <span className="text-xs font-bold uppercase tracking-wider text-gray-600">
-                                    {contractors.length} Requests Pending
+                            
+                            <div className="flex items-center gap-2 bg-slate-700/50 border border-slate-600 px-4 py-2 rounded-xl self-start sm:self-auto shadow-inner">
+                                <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-200">
+                                    {pendingContractors.length} Requests Pending
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Contractor List */}
-                    <div className="space-y-4">
-                        {contractors.length > 0 ? (
-                            contractors.map((contractor) => (
-                                <div key={contractor.id} className="group bg-white p-6 rounded-xl transition-all duration-300 hover:shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-6 border border-slate-100">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center text-[#003f87]">
-                                            <span className="material-symbols-outlined text-3xl">engineering</span>
+                    {/* QUEUE CARDS LOOP */}
+                    <div className="space-y-4 max-w-4xl">
+                        {pendingContractors.length > 0 ? (
+                            pendingContractors.map((contractor) => (
+                                <div 
+                                    key={contractor.id} 
+                                    className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+                                            <Icon name="engineering" className="text-3xl" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900">{contractor.name}</h3>
-                                            <p className="text-sm text-slate-500">{contractor.email}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[10px] font-bold uppercase text-green-700 bg-green-100 px-2 py-0.5 rounded-full">New Submission</span>
-                                                <span className="text-[10px] font-bold uppercase text-slate-400">ID: #{contractor.id}</span>
+                                            <h4 className="text-lg font-bold text-gray-900 dark:text-white">{contractor.name}</h4>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono mt-0.5">{contractor.email}</p>
+                                            
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <span className="text-[10px] font-extrabold uppercase text-yellow-700 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200/40 px-2 py-0.5 rounded-md tracking-wider">
+                                                    New Submission
+                                                </span>
+                                                <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">
+                                                    ID: #{String(contractor.id).padStart(4, '0')}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
                                     
+                                    {/* WORKFLOW CTA TRIGGER ACTION GROUP */}
                                     <div className="flex items-center gap-3">
                                         <button 
                                             disabled={processing}
                                             onClick={() => handleApproval(contractor.id, 'approve')}
-                                            className="flex-1 md:flex-none px-6 py-2.5 bg-gradient-to-br from-green-600 to-green-800 text-white font-bold text-sm rounded-lg transition-transform active:scale-95 shadow-sm disabled:opacity-50"
+                                            className="flex-1 md:flex-none px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all active:scale-95 disabled:opacity-40 flex items-center justify-center gap-1"
                                         >
-                                            Approve
+                                            <Icon name="check_circle" className="text-xs" /> Approve Access
                                         </button>
                                         <button 
                                             disabled={processing}
                                             onClick={() => handleApproval(contractor.id, 'reject')}
-                                            className="flex-1 md:flex-none px-6 py-2.5 bg-gray-100 text-red-600 font-bold text-sm rounded-lg transition-transform active:scale-95 hover:bg-red-50 disabled:opacity-50"
+                                            className="flex-1 md:flex-none px-5 py-2.5 bg-red-50 hover:bg-red-100 dark:bg-gray-700 text-red-600 dark:text-red-400 font-bold text-xs rounded-xl transition-all border border-red-100 dark:border-transparent active:scale-95 disabled:opacity-40"
                                         >
                                             Reject
                                         </button>
@@ -102,33 +128,36 @@ export default function ContractorApproval({ auth, contractors }) {
                                 </div>
                             ))
                         ) : (
-                            /* Empty State */
-                            <div className="flex flex-col items-center justify-center py-32 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                                <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center mb-6 shadow-sm">
-                                    <span className="material-symbols-outlined text-4xl text-slate-300">assignment_turned_in</span>
+                            /* EMPTY QUEUE CONTAINER FALLBACK */
+                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 p-6 shadow-sm text-center">
+                                <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-gray-700 flex items-center justify-center mb-4 text-slate-400 dark:text-slate-500">
+                                    <Icon name="fact_check" className="text-3xl" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-gray-900">No pending contractors</h3>
-                                <p className="text-slate-500 mt-2">The queue is currently empty. Check back later for new requests.</p>
+                                <h4 className="text-xl font-bold text-gray-900 dark:text-white">Verification Queue Empty</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
+                                    No pending contractor applications require manual policy compliance audits right now.
+                                </p>
                             </div>
                         )}
                     </div>
-                </div>
-            </main>
-        </div>
+
+                </main>
+            </div>
+        </AuthenticatedLayout>
     );
 }
 
-// Sub-component for clean sidebar links
+// Sidebar Navigation Link Component
 const NavLink = ({ href, icon, children, active }) => (
     <Link 
         href={href} 
-        className={`${
+        className={`w-[calc(100%-24px)] text-left rounded-xl mx-3 px-4 py-3.5 flex items-center gap-3 transition-all ${
             active 
-            ? 'bg-blue-50 text-[#003f87]' 
-            : 'text-slate-600 hover:text-[#003f87]'
-        } mx-2 my-1 px-4 py-3 flex items-center gap-3 transition-all rounded-lg text-sm font-semibold`}
+                ? 'bg-[#d5e3fc] text-[#0d1c2e] translate-x-1 font-bold border-l-4 border-slate-800' 
+                : 'text-[#434655] hover:bg-slate-100 dark:hover:bg-gray-800'
+        }`}
     >
-        <span className="material-symbols-outlined">{icon}</span>
-        {children}
+        <Icon name={icon} className={active ? 'text-slate-800' : 'text-slate-400'} />
+        <span className="text-sm font-medium flex items-center w-full">{children}</span>
     </Link>
 );
