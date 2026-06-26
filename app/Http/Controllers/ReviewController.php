@@ -10,14 +10,14 @@ class ReviewController extends Controller
 {
     public function store(Request $request)
     {
-        // 1. Validate incoming data payloads strictly
+        // Validate incoming data payloads strictly
         $validated = $request->validate([
             'repair_request_id' => 'required|exists:repair_requests,id',
             'rating'            => 'required|integer|min:1|max:5',
             'review'            => 'nullable|string|max:1000',
         ]);
 
-        // 2. Fetch the specific repair request to verify ownership
+        // Fetch the specific repair request to verify ownership
         $repairRequest = RepairRequest::findOrFail($validated['repair_request_id']);
 
         // Security Check: Guard to ensure only the tenant who owns the request can rate it
@@ -30,7 +30,7 @@ class ReviewController extends Controller
             return back()->with('error', 'You have already submitted a review for this repair request.');
         }
 
-        // 3. Create and store the normalized review record
+        // Create and store the normalized review record
         Review::create([
             'repair_request_id' => $repairRequest->id,
             'tenant_id'         => auth()->id(),
@@ -39,7 +39,7 @@ class ReviewController extends Controller
             'review'            => $validated['review'],
         ]);
 
-        // 4. Cleanly redirect back to the dashboard with an Inertia session flash message
+        // Cleanly redirect back to the dashboard with an Inertia session flash message
         return back()->with('success', 'Thank you! Your feedback has been recorded successfully.');
     }
 }

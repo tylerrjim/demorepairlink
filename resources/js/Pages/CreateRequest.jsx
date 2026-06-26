@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import TenantLayout from './TenantLayout';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 
@@ -28,7 +28,7 @@ export default function CreateRequest() {
     const todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Nairobi' });
 
     return (
-        <AuthenticatedLayout
+        <TenantLayout
             header={
                 <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     File Maintenance Ticket
@@ -37,8 +37,8 @@ export default function CreateRequest() {
         >
             <Head title="Create Request" />
 
-            <div className="py-10 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-65px)]">
-                <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div className="py-2 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-140px)]">
+                <div className="mx-auto max-w-3xl">
 
                     {/* Intro Track Banner */}
                     <div className="mb-8">
@@ -167,6 +167,6 @@ export default function CreateRequest() {
 
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </TenantLayout>
     );
 }

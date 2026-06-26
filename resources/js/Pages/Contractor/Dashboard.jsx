@@ -71,15 +71,14 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
 
     return (
         <AuthenticatedLayout
-            header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Contractor Dashboard
-                </h2>
-            }
+            // ✅ FIXED: Removed the dual parent page header property assignment string block 
+            // to eliminate the duplicate vertical spacing gap at the top of the viewport.
+            user={router.page?.props?.auth?.user}
         >
             <Head title="Contractor Dashboard" />
 
-            <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row">
+            {/* ✅ FIXED: Adjusted the layout container flow with absolute padding alignment boundaries */}
+            <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row pt-16 md:pt-0">
 
                 {/* ================= SIDEBAR ================= */}
                 <aside className="hidden md:flex flex-col h-full w-[280px] fixed left-0 top-0 bg-[#f7f9fb] border-r border-[#c3c6d7] py-4 z-40">
@@ -87,6 +86,7 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                         <span className="text-2xl font-bold text-[#004ac6]">
                             RepairLink
                         </span>
+                        <span className="text-[10px] uppercase font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded ml-2">Trade</span>
                     </div>
 
                     <nav className="flex-1 space-y-1">
@@ -113,7 +113,8 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                 </aside>
 
                 {/* ================= MAIN CONTENT ================= */}
-                <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0">
+                {/* ✅ FIXED: Added specific top-margin and padding control to line up flush with the sidebar */}
+                <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0 pt-6 md:pt-8">
                     <div className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
 
                         {/* Page Title */}

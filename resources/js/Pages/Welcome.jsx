@@ -1,35 +1,70 @@
 import React from 'react';
 import { Link, Head } from '@inertiajs/react';
 
+// ✅ UNIVERSAL ICON WRAPPER
+const Icon = ({ name, className = '' }) => (
+    <span className={`material-symbols-outlined ${className}`}>
+        {name}
+    </span>
+);
+
 const Welcome = ({ auth }) => {
     return (
-        <div className="bg-white font-sans text-gray-900 overflow-x-hidden">
-            <Head title="RepairLink - Modern Home Repair Connection" />
+        <div className="bg-[#f8fafc] text-[#191c1e] font-sans antialiased min-h-screen selection:bg-blue-500 selection:text-white scroll-smooth">
+            <Head title="RepairLink - Direct Residential Maintenance Connection" />
 
-            {/* BEGIN: Navigation */}
-            <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+            {/* ================= PUBLIC NAVIGATION HEADER ================= */}
+            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <div className="flex-shrink-0 flex items-center">
-                            <span className="text-2xl font-bold text-[#0056b3]">
-                                Repair<span className="text-[#28a745]">Link</span>
-                            </span>
+                        
+                        {/* Left Side: Application Logo & Main Links */}
+                        <div className="flex items-center gap-8">
+                            <a href="#" className="flex items-center gap-2 group">
+                                <span className="material-symbols-outlined text-blue-600 text-2xl font-bold group-hover:scale-105 transition-transform">handshake</span>
+                                <span className="font-black text-xl tracking-wider text-gray-900">
+                                    Repair<span className="text-emerald-600">Link</span>
+                                </span>
+                            </a>
+
+                            {/* Center Side: Desktop Anchor Navigation Links */}
+                            {/* ✅ FIXED: Trimmed to Home, How It Works, and Contact Us */}
+                            <div className="hidden md:flex items-center gap-6">
+                                <a href="#" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                                    Home
+                                </a>
+                                <a href="#how-it-works" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                                    How It Works
+                                </a>
+                                <a href="#contact-support" className="text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors">
+                                    Contact Us
+                                </a>
+                            </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+
+                        {/* Right Side: Context-Aware Call-To-Actions Links */}
+                        <div className="flex items-center gap-3">
                             {auth.user ? (
                                 <Link
                                     href={route('dashboard')}
-                                    className="text-sm font-semibold text-[#0056b3] px-3 py-2"
+                                    className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-sm transition-all active:scale-[0.98]"
                                 >
-                                    Dashboard
+                                    <Icon name="space_dashboard" className="text-sm" />
+                                    Go to Dashboard
                                 </Link>
                             ) : (
                                 <>
                                     <Link
                                         href={route('login')}
-                                        className="text-sm font-semibold text-[#0056b3] px-3 py-2"
+                                        className="text-xs sm:text-sm font-bold text-gray-600 hover:text-blue-600 transition-colors px-3 py-2"
                                     >
-                                        Login
+                                        Sign In
+                                    </Link>
+                                    <Link
+                                        href={route('register')}
+                                        className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-xl shadow-sm transition-all active:scale-[0.98]"
+                                    >
+                                        Get Started
                                     </Link>
                                 </>
                             )}
@@ -38,106 +73,136 @@ const Welcome = ({ auth }) => {
                 </div>
             </nav>
 
-            {/* BEGIN: Hero Section */}
-            <header className="relative pt-12 pb-16 sm:pt-20 sm:pb-24 overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-[#1a202c] mb-6">
-                        RepairLink
+            {/* ================= HERO SECTION BLOCK ================= */}
+            <header className="relative pt-16 pb-20 sm:pt-24 sm:pb-28 overflow-hidden bg-gradient-to-b from-white to-slate-50 border-b border-slate-100">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl -z-10"></div>
+                <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-emerald-500/5 rounded-full blur-2xl -z-10"></div>
+
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+                    <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 leading-tight">
+                        Connecting You with <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Skilled Hands</span>, Every Step of the Way.
                     </h1>
-                    <p className="max-w-2xl mx-auto text-lg sm:text-xl text-gray-600 mb-10 leading-relaxed">
-                        Connect with trusted contractors to solve home repair issues quickly and efficiently. 
-                        The seamless bridge between property needs and professional solutions.
+                    
+                    <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-500 leading-relaxed font-medium">
+                        A direct system linking residential repair needs with verified trade specialists. Create repair requests, review quotes, and track job progress all from a single workspace dashboard.
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4">
+                    {/* User Segment Separation Gateway Row */}
+                    <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4 max-w-lg mx-auto">
                         <Link
-                            href={route('register', { role: 'tenant' })}
-                            className="w-full sm:w-auto px-8 py-4 bg-[#0056b3] text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200 text-center"
+                            href={route('register')}
+                            className="w-full sm:w-1/2 py-3.5 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/10 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
                         >
+                            <Icon name="person" className="text-lg" />
                             Register as Tenant
                         </Link>
                         <Link
-                            href={route('contractor.register', { role: 'contractor' })}
-                            className="w-full sm:w-auto px-8 py-4 border-2 border-[#28a745] text-[#28a745] font-bold rounded-lg hover:bg-green-50 transition-colors duration-200 text-center"
+                            href={route('contractor.register')}
+                            className="w-full sm:w-1/2 py-3.5 px-6 bg-white border border-emerald-200 hover:border-emerald-500 hover:bg-emerald-50/30 text-emerald-700 font-bold rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
                         >
-                            Register as Contractor
+                            <Icon name="badge" className="text-lg text-emerald-600" />
+                            Join as Contractor
                         </Link>
                     </div>
-                </div>
-                
-                {/* Subtle Background Element */}
-                <div className="absolute top-0 right-0 -z-10 opacity-10">
-                    <svg fill="none" height="400" viewBox="0 0 400 400" width="400">
-                        <circle className="text-[#0056b3]" cx="200" cy="200" r="180" stroke="currentColor" strokeWidth="2"></circle>
-                    </svg>
                 </div>
             </header>
 
-            {/* BEGIN: How It Works Section */}
-            <section className="py-16 bg-gray-50" id="how-it-works">
+            {/* ================= STEP-BY-STEP WORKFLOW LIFECYCLE ================= */}
+            <section className="py-20 bg-white" id="how-it-works">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-[#1a202c]">How It Works</h2>
-                        <div className="w-16 h-1 bg-[#28a745] mx-auto mt-4 rounded"></div>
+                    <div className="text-center mb-16 space-y-2">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">How It Works</h2>
+                        <p className="text-sm text-gray-500 font-medium">Simple tracking milestones managing your task pipeline from start to completion.</p>
+                        <div className="w-12 h-1 bg-blue-600 mx-auto rounded-full"></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
-                        <StepCard number="01" title="Submit Request" description="Tenant describes the issue, adds photos, and submits a repair ticket instantly." />
-                        <StepCard number="02" title="Job Accepted" description="Verified contractors receive notifications and accept the job based on their availability." />
-                        <StepCard number="03" title="Repair Completed" description="The contractor finishes the work, and the status is updated to complete in real-time." />
-                    </div>
-                </div>
-            </section>
-
-            {/* BEGIN: Benefits Section */}
-            <section className="py-20 bg-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-[#1a202c]">Why Choose RepairLink?</h2>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <BenefitCard 
-                            title="Verified contractors" 
-                            description="Rigorous background checks to ensure quality and safety."
-                            icon={<path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />}
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+                        <StepCard 
+                            number="01" 
+                            icon="assignment" 
+                            accentColor="blue"
+                            title="Submit Request" 
+                            description="Select a maintenance category, describe your repair needs, and instantly file a request ticket inside your dashboard." 
                         />
-                        <BenefitCard 
-                            title="Fast response" 
-                            description="Most repairs are picked up within minutes of submission."
-                            icon={<path d="M13 10V3L4 14h7v7l9-11h-7z" />}
+                        <StepCard 
+                            number="02" 
+                            icon="rate_review" 
+                            accentColor="emerald"
+                            title="Review Quotes" 
+                            description="Available contractors review the request details, perform field inspections, and submit direct pricing bids for your approval." 
                         />
-                        <BenefitCard 
-                            title="Easy job management" 
-                            description="Track history, updates, and feedback all in one dashboard."
-                            icon={<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />}
-                        />
-                        <BenefitCard 
-                            title="Secure communication" 
-                            description="In-app messaging keeps your personal data private."
-                            icon={<path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />}
+                        <StepCard 
+                            number="03" 
+                            icon="check_circle" 
+                            accentColor="blue"
+                            title="Track Progress" 
+                            description="Approve your preferred quote, watch the live status update, pay securely upon completion, and rate your operator." 
                         />
                     </div>
                 </div>
             </section>
 
-            {/* BEGIN: Footer CTA */}
-            <footer className="bg-[#1a202c] text-white py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl font-bold mb-4">Ready to get started?</h2>
-                    <p className="text-gray-400 mb-10">Join thousands of users simplifying their home maintenance today.</p>
-                    <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <Link href={route('register', { role: 'tenant' })} className="w-full sm:w-auto px-10 py-4 bg-[#0056b3] text-white font-bold rounded-lg hover:bg-blue-600 transition-colors">
-                            Register as Tenant
+            {/* ================= PLATFORM VALUE PROPOSITIONS ================= */}
+            <section className="py-20 bg-[#f8fafc] border-t border-b border-slate-200/50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16 space-y-2">
+                        <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">System Highlights</h2>
+                        <p className="text-sm text-gray-500 font-medium">Designed for straightforward communication and reliable project completion.</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <BenefitCard 
+                            title="Admin Vetting" 
+                            description="System administrators manually review contractor applications before granting live pipeline access."
+                            icon="shield_person"
+                            hoverColor="hover:border-blue-500/30"
+                        />
+                        <BenefitCard 
+                            title="Direct System" 
+                            description="Eliminates intermediate confusion by linking tenants directly with specialists for localized tasks."
+                            icon="engineering"
+                            hoverColor="hover:border-emerald-500/30"
+                        />
+                        <BenefitCard 
+                            title="Status Tracking" 
+                            description="Real-time dashboard status updates keep both parties informed of every phase of execution."
+                            icon="query_stats"
+                            hoverColor="hover:border-blue-500/30"
+                        />
+                        <BenefitCard 
+                            title="Rating Appraisals" 
+                            description="Tenants leave direct feedback reviews to maintain transparency and quality within the network."
+                            icon="star"
+                            hoverColor="hover:border-emerald-500/30"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* ================= LANDING SYSTEM FOOTER ================= */}
+            <footer className="bg-slate-900 text-white pt-16 pb-12 border-t border-slate-800" id="contact-support">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+                    <div className="max-w-md mx-auto space-y-3">
+                        <h3 className="text-2xl font-bold tracking-tight">Simplify Property Repairs</h3>
+                        <p className="text-slate-400 text-sm font-medium">Connecting residential needs with skilled tradesmen smoothly and transparently.</p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-3 max-w-xs mx-auto sm:max-w-none">
+                        <Link href={route('register')} className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-all shadow-md">
+                            Register Tenant Portal
                         </Link>
-                        <Link href={route('contractor.register', { role: 'contractor' })} className="w-full sm:w-auto px-10 py-4 bg-[#28a745] text-white font-bold rounded-lg hover:bg-green-600 transition-colors">
-                            Register as Contractor
+                        {/* ✅ FIXED: Changed label text to "Join as Contractor" */}
+                        <Link href={route('contractor.register')} className="w-full sm:w-auto px-6 py-3 bg-slate-800 text-emerald-400 border border-emerald-500/30 hover:bg-slate-700 font-bold text-sm rounded-xl transition-all shadow-sm">
+                            Join as Contractor
                         </Link>
                     </div>
-                    <div className="mt-20 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-                        <p>© 2026 RepairLink Inc. All rights reserved.</p>
-                        <div className="flex space-x-6 mt-4 md:mt-0">
-                            <a className="hover:text-white transition-colors" href="#">Privacy Policy</a>
-                            <a className="hover:text-white transition-colors" href="#">Terms of Service</a>
-                            <a className="hover:text-white transition-colors" href="#">Contact Us</a>
+                    
+                    <div className="pt-12 border-t border-slate-800/80 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 font-medium gap-4">
+                        <p>© 2026 RepairLink. Built for modern property maintenance automation.</p>
+                        <div className="flex items-center gap-6">
+                            <span className="hover:text-slate-300 cursor-pointer transition-colors">Privacy Policy</span>
+                            <span className="hover:text-slate-300 cursor-pointer transition-colors">Terms of Service</span>
+                            <span className="hover:text-slate-300 cursor-pointer transition-colors">Contact Support</span>
                         </div>
                     </div>
                 </div>
@@ -146,26 +211,34 @@ const Welcome = ({ auth }) => {
     );
 };
 
-// Helper Components for Cleanliness
-const StepCard = ({ number, title, description }) => (
-    <div className="flex flex-col items-center text-center px-4">
-        <div className="text-6xl font-black mb-4" style={{ WebkitTextStroke: '1px #0056b3', color: 'transparent' }}>
-            {number}
+// ================= WORKFLOW CARD CHILD COMPONENT =================
+const StepCard = ({ number, icon, title, description, accentColor }) => {
+    const isEmerald = accentColor === 'emerald';
+    return (
+        <div className={`flex flex-col items-center text-center p-6 bg-white rounded-2xl border border-slate-200/80 relative group transition-all shadow-sm hover:shadow-md ${isEmerald ? 'hover:border-emerald-500/30' : 'hover:border-blue-500/30'}`}>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 border transition-all shadow-inner ${isEmerald ? 'bg-emerald-50 border-emerald-100 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' : 'bg-blue-50 border-blue-100 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'}`}>
+                <Icon name={icon} className="text-xl" />
+            </div>
+            
+            <div className="flex items-center justify-center gap-2 mb-2 w-full">
+                <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md font-mono tracking-wider ${isEmerald ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {number}
+                </span>
+                <h3 className="text-lg font-bold text-slate-900 tracking-tight">{title}</h3>
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed font-medium">{description}</p>
         </div>
-        <h3 className="text-xl font-bold mb-3">{title}</h3>
-        <p className="text-gray-600">{description}</p>
-    </div>
-);
+    );
+};
 
-const BenefitCard = ({ title, description, icon }) => (
-    <div className="p-8 border border-gray-100 rounded-2xl bg-white hover:border-[#0056b3]/30 transition-all shadow-sm hover:shadow-md">
-        <div className="w-12 h-12 bg-blue-50 flex items-center justify-center rounded-lg mb-6">
-            <svg className="w-6 h-6 text-[#0056b3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {icon}
-            </svg>
+// ================= BENEFIT CARD CHILD COMPONENT =================
+const BenefitCard = ({ title, description, icon, hoverColor }) => (
+    <div className={`p-6 border border-slate-200/60 rounded-2xl bg-white hover:shadow-md transition-all group shadow-sm ${hoverColor}`}>
+        <div className="w-10 h-10 bg-slate-50 text-slate-500 group-hover:bg-slate-100 flex items-center justify-center rounded-xl mb-5 transition-all border border-slate-100 shadow-inner">
+            <Icon name={icon} className="text-lg" />
         </div>
-        <h4 className="text-lg font-bold mb-2">{title}</h4>
-        <p className="text-sm text-gray-500">{description}</p>
+        <h4 className="text-base font-bold mb-2 text-slate-900 tracking-tight">{title}</h4>
+        <p className="text-xs text-gray-500 leading-relaxed font-medium">{description}</p>
     </div>
 );
 

@@ -1,4 +1,4 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import TenantLayout from './TenantLayout';
 import { Head, router, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 import ReviewModal from '@/Components/ReviewModal';
@@ -43,7 +43,7 @@ export default function MyRequests({ requests }) {
     }
 
     return (
-        <AuthenticatedLayout
+        <TenantLayout
             header={
                 <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     My Repair Requests
@@ -52,8 +52,8 @@ export default function MyRequests({ requests }) {
         >
             <Head title="My Requests" />
 
-            <div className="py-10 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-65px)]">
-                <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="py-2 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-140px)]">
+                <div className="mx-auto max-w-5xl">
                     
                     {/* Page Intro Header */}
                     <div className="mb-8">
@@ -291,6 +291,6 @@ export default function MyRequests({ requests }) {
                     onClose={() => setSelectedRequestForReview(null)}
                 />
             )}
-        </AuthenticatedLayout>
+        </TenantLayout>
     );
 }

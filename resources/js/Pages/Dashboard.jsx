@@ -1,12 +1,20 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import TenantLayout from './TenantLayout'; // ✅ SWAPPED AND FIXED PATH
 import { Head, Link, usePage } from '@inertiajs/react';
+import React from 'react';
+
+// Universal Icon Wrapper
+const Icon = ({ name, className = '' }) => (
+    <span className={`material-symbols-outlined text-lg ${className}`}>
+        {name}
+    </span>
+);
 
 export default function Dashboard() {
     const { auth } = usePage().props;
     const user = auth.user;
 
     return (
-        <AuthenticatedLayout
+        <TenantLayout
             header={
                 <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     Tenant Hub Dashboard
@@ -15,8 +23,8 @@ export default function Dashboard() {
         >
             <Head title="Tenant Dashboard" />
 
-            <div className="py-10 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-65px)]">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="py-2 bg-[#f8fafc] dark:bg-gray-900 min-h-[calc(100vh-140px)]">
+                <div className="mx-auto max-w-7xl">
                     
                     {/* ================= WELCOME HERO BANNER ================= */}
                     <div className="mb-8 p-6 sm:p-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-md text-white">
@@ -35,7 +43,7 @@ export default function Dashboard() {
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                             <div>
                                 <div className="w-12 h-12 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4">
-                                    <span className="material-symbols-outlined text-2xl font-bold">add_task</span>
+                                    <Icon name="add_task" className="text-2xl font-bold" />
                                 </div>
                                 <h4 className="text-lg font-bold text-gray-900 dark:text-white">Report an Issue</h4>
                                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 mb-6">
@@ -54,7 +62,7 @@ export default function Dashboard() {
                         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                             <div>
                                 <div className="w-12 h-12 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-4">
-                                    <span className="material-symbols-outlined text-2xl font-bold">content_paste_search</span>
+                                    <Icon name="content_paste_search" className="text-2xl font-bold" />
                                 </div>
                                 <h4 className="text-lg font-bold text-gray-900 dark:text-white">Track Progress</h4>
                                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 mb-6">
@@ -81,6 +89,6 @@ export default function Dashboard() {
 
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </TenantLayout>
     );
 }
