@@ -10,7 +10,7 @@ export default function SelectContractor({ repair, contractors = [] }) {
         });
     }
 
-    // ✅ HELPER: Renders stars inline based on the user's reputation score
+    //  Renders stars inline based on the user's reputation score
     const renderRating = (rating) => {
         const score = parseFloat(rating);
         if (isNaN(score) || score === 0) {
@@ -55,7 +55,7 @@ export default function SelectContractor({ repair, contractors = [] }) {
                                             🛠️ {c.contractor_profile?.trade || 'General Maintenance'}
                                         </p>
                                         
-                                        {/* ✅ INTEGRATED DYNAMIC RATINGS BAR */}
+                                        {/*  INTEGRATED DYNAMIC RATINGS BAR */}
                                         <div className="pt-1">
                                             {renderRating(c.average_rating)}
                                         </div>

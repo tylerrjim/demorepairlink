@@ -14,8 +14,10 @@ class ContractorApprovalController extends Controller
      */
     public function index()
     {
-        // Fetch ALL contractors so the ContractorsList file can filter or view them cleanly
-        $contractors = User::where('role', 'contractor')->get();
+        // ✅ FIXED: Added with('contractorProfile') so the list can access nested profile information
+        $contractors = User::where('role', 'contractor')
+            ->with('contractorProfile')
+            ->get();
 
         // Calculate the count of pending profiles to update the sidebar's red counter badge dynamically
         $pendingCount = User::where('role', 'contractor')
@@ -34,12 +36,14 @@ class ContractorApprovalController extends Controller
      */
     public function approvals()
     {
-        // Fetch only the applicants waiting for admin verification
+        // ✅ FIXED: Eager load the 'contractorProfile' relationship so all data is available
+        // This ensures 'cv_path' from users table and trade/phone from profiles table are bound together
         $pendingContractors = User::where('role', 'contractor')
             ->where('status', 'pending')
+            ->with('contractorProfile')
             ->get();
 
-        // ✅ INJECTED: Keep sidebar notification bubble active when navigating onto this queue view
+        // Keep sidebar notification bubble active when navigating onto this queue view
         $pendingCount = User::where('role', 'contractor')
             ->where('status', 'pending')
             ->count();
@@ -56,7 +60,7 @@ class ContractorApprovalController extends Controller
      */
     public function approve(User $user)
     {
-        // ✅ FIXED: Changed from 'approved' back to 'active' to resolve your SQL 1265 truncation error
+        // Changed from 'approved' back to 'active' to resolve your SQL 1265 truncation error
         $user->status = 'active'; 
         $user->save();
 

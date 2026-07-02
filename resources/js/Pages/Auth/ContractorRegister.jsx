@@ -18,13 +18,14 @@ const ContractorRegister = () => {
         phone: '',
         trade: '',
         years_of_experience: '',
+        cv: null, // ✅ Holds the uploaded binary file stream object
     });
 
     // 2. Handle Form Submission
     const submit = (e) => {
         e.preventDefault();
         post(route('contractor.store'), {
-            onFinish: () => reset('password', 'password_confirmation'),
+            onFinish: () => reset('password', 'password_confirmation', 'cv'),
         });
     };
 
@@ -85,7 +86,7 @@ const ContractorRegister = () => {
                     </div>
 
                     {/* Content Registration Form */}
-                    <form onSubmit={submit} className="space-y-4">
+                    <form onSubmit={submit} className="space-y-4" encType="multipart/form-data">
                         
                         {/* 1. Name Field */}
                         <div className="space-y-1.5">
@@ -195,7 +196,6 @@ const ContractorRegister = () => {
                                     required
                                 >
                                     <option value="">Select your craft...</option>
-                                    <option value="carpentry">Carpentry & Woodwork</option>
                                     <option value="plumbing">Plumbing Maintenance</option>
                                     <option value="electrical">Electrical Grid & Systems</option>
                                 </select>
@@ -226,20 +226,40 @@ const ContractorRegister = () => {
                             {errors.years_of_experience && <div className="text-red-500 text-xs mt-1">⚠️ {errors.years_of_experience}</div>}
                         </div>
 
-                        {/* 7. Action Submit Button Toggle Group */}
+                        {/* 🛠️ 7. Supporting Documents (e.g., CV) File Upload Input Row */}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-0.5">
+                                Supporting Documents (e.g., CV) [PDF format]
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                                    <Icon name="upload_file" className="text-lg" />
+                                </div>
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    className="w-full pl-10 pr-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 rounded-xl focus:border-blue-500 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-900 transition-all outline-none shadow-sm file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-200 cursor-pointer"
+                                    onChange={(e) => setData('cv', e.target.files[0])}
+                                    required
+                                />
+                            </div>
+                            {errors.cv && <div className="text-red-500 text-xs font-semibold mt-1">⚠️ {errors.cv}</div>}
+                        </div>
+
+                        {/* 8. Action Submit Button */}
                         <div className="pt-2">
                             <button 
                                 type="submit"
                                 disabled={processing}
                                 className="w-full py-3 px-4 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed rounded-xl shadow-md shadow-blue-500/10 transition-all flex items-center justify-center gap-2 group"
                             >
-                                {processing ? 'Registering Account...' : 'Register Contractor Node'}
+                                {processing ? 'Registering Account...' : 'Register Contractor'}
                                 {!processing && <Icon name="badge" className="text-sm group-hover:translate-x-0.5 transition-transform" />}
                             </button>
                         </div>
                     </form>
 
-                    {/* 8. Redirect Policy Row Block */}
+                    {/* 9. Redirect Policy Row Block */}
                     <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
                         <p className="text-xs text-gray-400 dark:text-gray-500">
                             By registering, your profile is routed to the validation pool. For help, contact support.

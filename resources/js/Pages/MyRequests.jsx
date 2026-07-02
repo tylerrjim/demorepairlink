@@ -14,7 +14,7 @@ export default function MyRequests({ requests }) {
     // Local state to control the review modal visibility
     const [selectedRequestForReview, setSelectedRequestForReview] = useState(null);
     
-    // ✅ NEW STATE LAYER: Tracks active asynchronous M-Pesa sandbox transaction loops
+    //  NEW STATE LAYER: Tracks active asynchronous M-Pesa sandbox transaction loops
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
     // Laravel Over-The-Wire Routing Methods
@@ -22,7 +22,7 @@ export default function MyRequests({ requests }) {
         router.post(`/requests/${id}/confirm`);
     }
 
-    // ✅ FIXED ACTION HOOK: Implements safety toggles to handle network responses or cancellations gracefully
+    //  FIXED ACTION HOOK: Implements safety toggles to handle network responses or cancellations gracefully
     function handleMockPayment(id) {
         setIsProcessingPayment(true);
         router.post(`/requests/${id}/pay`, {}, {

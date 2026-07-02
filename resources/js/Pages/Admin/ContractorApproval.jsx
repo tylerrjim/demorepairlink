@@ -2,7 +2,7 @@ import React from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-// ✅ UNIVERSAL ICON WRAPPER
+//  UNIVERSAL ICON WRAPPER
 const Icon = ({ name, className = '' }) => (
     <span className={`material-symbols-outlined text-xl ${className}`}>
         {name}
@@ -14,22 +14,22 @@ export default function ContractorApproval({ auth, contractors = [] }) {
 
     const handleApproval = (id, action) => {
         if (confirm(`Are you sure you want to ${action} this contractor application?`)) {
-            // ✅ BULLETPROOF RAW PATH PATTERNS
+            //  BULLETPROOF RAW PATH PATTERNS
             post(`/admin/contractors/${id}/${action}`);
         }
     };
 
-    // ✅ FILTER: Only display requests requiring manual data vetting audits
+    //  FILTER: Only display requests requiring manual data vetting audits
     const pendingContractors = contractors.filter(c => c.status === 'pending' || !c.status);
 
     return (
         <AuthenticatedLayout 
-            // ✅ FIXED: Removed header prop block to clear the spacing block conflict
+            //  FIXED: Removed header prop block to clear the spacing block conflict
             user={router.page?.props?.auth?.user}
         >
             <Head title="Contractor Approvals" />
 
-            {/* ✅ FIXED: Spacing and padding configuration metrics adjusted for flush sidebar layout */}
+            {/*  FIXED: Spacing and padding configuration metrics adjusted for flush sidebar layout */}
             <div className="bg-[#f8fafc] dark:bg-gray-900 text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row pt-16 md:pt-0">
 
                 {/* ================= SIDEBAR NAVIGATION ================= */}
@@ -55,7 +55,7 @@ export default function ContractorApproval({ auth, contractors = [] }) {
                 </aside>
 
                 {/* ================= MAIN CONTENT ================= */}
-                {/* ✅ FIXED: Standardized padding thresholds to eliminate spacing gaps */}
+                {/*  FIXED: Standardized padding thresholds to eliminate spacing gaps */}
                 <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0 pt-6 md:pt-8">
                     <div className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
 
@@ -81,7 +81,7 @@ export default function ContractorApproval({ auth, contractors = [] }) {
                             </div>
                         </div>
 
-                        {/* QUEUE CARDS LOOP */}
+                        {/* BOXES QUEUE CARDS LOOP */}
                         <div className="space-y-4 max-w-4xl">
                             {pendingContractors.length > 0 ? (
                                 pendingContractors.map((contractor) => (
@@ -89,15 +89,15 @@ export default function ContractorApproval({ auth, contractors = [] }) {
                                         key={contractor.id} 
                                         className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm transition-all hover:shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6"
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0 mt-1">
                                                 <Icon name="engineering" className="text-3xl" />
                                             </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-900 dark:text-white">{contractor.name}</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono mt-0.5">{contractor.email}</p>
+                                            <div className="space-y-1">
+                                                <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-none">{contractor.name}</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono">{contractor.email}</p>
                                                 
-                                                <div className="flex items-center gap-2 mt-2">
+                                                <div className="flex items-center gap-2 pt-0.5 flex-wrap">
                                                     <span className="text-[10px] font-extrabold uppercase text-yellow-700 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200/40 px-2 py-0.5 rounded-md tracking-wider">
                                                         New Submission
                                                     </span>
@@ -105,11 +105,31 @@ export default function ContractorApproval({ auth, contractors = [] }) {
                                                         ID: #{String(contractor.id).padStart(4, '0')}
                                                     </span>
                                                 </div>
+
+                                                {/* 🛠️ NEW DEDICATED STRUCTURED LAYOUT LAYER FOR SUPPORTING DOCUMENTS */}
+                                                <div className="pt-2 flex items-center">
+                                                    {contractor.cv_path ? (
+                                                        <a 
+                                                            href={`/storage/${contractor.cv_path}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-blue-950/30 px-2.5 py-1 rounded-lg border border-blue-100 dark:border-blue-900/50 shadow-sm"
+                                                        >
+                                                            <Icon name="description" className="text-sm !text-base" />
+                                                            Review Supporting Documents
+                                                        </a>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/40 px-2.5 py-1 rounded-lg border border-gray-100 dark:border-gray-800">
+                                                            <Icon name="folder_off" className="text-sm !text-base" />
+                                                            No Documents Uploaded
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                         
                                         {/* WORKFLOW CTA TRIGGER ACTION GROUP */}
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 shrink-0 self-center md:self-auto w-full md:w-auto">
                                             <button 
                                                 disabled={processing}
                                                 onClick={() => handleApproval(contractor.id, 'approve')}
@@ -149,7 +169,7 @@ export default function ContractorApproval({ auth, contractors = [] }) {
 }
 
 // Sidebar Navigation Link Component
-// ✅ UNIFORM DESIGN LAYOUT FIX
+//  UNIFORM DESIGN LAYOUT FIX
 const NavLink = ({ href, icon, children, active }) => (
     <Link 
         href={href} 

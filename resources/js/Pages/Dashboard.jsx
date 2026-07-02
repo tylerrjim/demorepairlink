@@ -1,4 +1,4 @@
-import TenantLayout from './TenantLayout'; // ✅ SWAPPED AND FIXED PATH
+import TenantLayout from './TenantLayout'; //  SWAPPED AND FIXED PATH
 import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
 

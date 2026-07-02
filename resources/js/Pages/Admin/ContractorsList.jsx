@@ -2,7 +2,7 @@ import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-// ✅ UNIVERSAL ICON WRAPPER
+//  UNIVERSAL ICON WRAPPER
 const Icon = ({ name, className = '' }) => (
     <span className={`material-symbols-outlined text-xl ${className}`}>
         {name}
@@ -11,17 +11,17 @@ const Icon = ({ name, className = '' }) => (
 
 export default function ContractorsList({ auth, contractors = [], pending_approvals_count = 0 }) {
     
-    // ✅ FIXED FILTER: Checks for 'active' to match your database ENUM mapping perfectly
+    // Checks for 'active' to match your database ENUM mapping perfectly
     const activeContractors = contractors.filter(c => c.status === 'active');
 
     return (
         <AuthenticatedLayout 
-            // ✅ FIXED: Removed header prop block to clear the spacing block conflict
+            // Removed header prop block to clear the spacing block conflict
             user={router.page?.props?.auth?.user}
         >
             <Head title="Verified Contractors" />
 
-            {/* ✅ FIXED: Spacing and padding configuration metrics adjusted for flush sidebar layout */}
+            {/*  Spacing and padding configuration metrics adjusted for flush sidebar layout */}
             <div className="bg-[#f8fafc] dark:bg-gray-900 text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row pt-16 md:pt-0">
 
                 {/* ================= SIDEBAR NAVIGATION (UNIFORM DESIGN TOKENS) ================= */}
@@ -47,7 +47,7 @@ export default function ContractorsList({ auth, contractors = [], pending_approv
                 </aside>
 
                 {/* ================= MAIN CONTENT ================= */}
-                {/* ✅ FIXED: Standardized padding thresholds to eliminate spacing gaps */}
+                {/* Standardized padding thresholds to eliminate spacing gaps */}
                 <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0 pt-6 md:pt-8">
                     <div className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
 
@@ -128,7 +128,7 @@ export default function ContractorsList({ auth, contractors = [], pending_approv
 }
 
 // Sidebar Navigation Link Component
-// ✅ UNIFORM DESIGN LAYOUT FIX
+//  UNIFORM DESIGN LAYOUT FIX
 const NavLink = ({ href, icon, children, active }) => (
     <Link 
         href={href} 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, Head } from '@inertiajs/react';
 
-// ✅ UNIVERSAL ICON WRAPPER
+// UNIVERSAL ICON WRAPPER
 const Icon = ({ name, className = '' }) => (
     <span className={`material-symbols-outlined ${className}`}>
         {name}

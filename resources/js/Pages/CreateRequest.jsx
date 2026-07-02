@@ -24,7 +24,7 @@ export default function CreateRequest() {
         post('/requests');
     }
 
-    // ✅ DYNAMIC CONFIGURATION: Strips current date to disable past selections in the calendar
+    //  DYNAMIC CONFIGURATION: Strips current date to disable past selections in the calendar
     const todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Nairobi' });
 
     return (
@@ -137,7 +137,7 @@ export default function CreateRequest() {
                                     </label>
                                     <input
                                         type="date"
-                                        // ✅ FIXED: Calendar will gray out all dates before Africa/Nairobi current today metric
+                                        //  FIXED: Calendar will gray out all dates before Africa/Nairobi current today metric
                                         min={todayString}
                                         value={data.scheduled_date}
                                         onChange={e => setData('scheduled_date', e.target.value)}

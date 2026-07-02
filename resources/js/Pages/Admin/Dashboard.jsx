@@ -2,7 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import React from 'react';
 
-// ✅ UNIVERSAL ICON WRAPPER
+//  UNIVERSAL ICON WRAPPER
 const Icon = ({ name, className = '' }) => (
     <span className={`material-symbols-outlined text-xl ${className}`}>
         {name}
@@ -12,13 +12,13 @@ const Icon = ({ name, className = '' }) => (
 export default function Dashboard({ auth, pending_approvals_count = 0 }) {
     return (
         <AuthenticatedLayout 
-            // ✅ FIXED: Removed the 'header' property prop block entirely to eliminate 
+            // Removed the 'header' property prop block entirely to eliminate 
             // the duplicate, messy secondary title banner stretching across the workspace window.
             user={router.page?.props?.auth?.user}
         >
             <Head title="Admin Dashboard" />
 
-            {/* ✅ FIXED: Adjusted the layout container flow with absolute layout boundaries */}
+            {/* Adjusted the layout container flow with absolute layout boundaries */}
             <div className="bg-[#f8fafc] dark:bg-gray-900 text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row pt-16 md:pt-0">
 
                 {/* ================= SIDEBAR NAVIGATION ================= */}
@@ -30,7 +30,7 @@ export default function Dashboard({ auth, pending_approvals_count = 0 }) {
                     </div>
 
                     <nav className="flex-1 space-y-1">
-                        {/* ✅ SAFE ABSOLUTE PATHS TO PREVENT JAVASCRIPT CRASHES */}
+                        {/* SAFE ABSOLUTE PATHS TO PREVENT JAVASCRIPT CRASHES */}
                         <NavLink href="/dashboard" icon="dashboard" active={true}>Dashboard</NavLink>
                         <NavLink href="/admin/contractors" icon="engineering" active={false}>Contractors</NavLink>
                         <NavLink href="/admin/contractors" icon="verified_user" active={false}>
@@ -45,7 +45,7 @@ export default function Dashboard({ auth, pending_approvals_count = 0 }) {
                 </aside>
 
                 {/* ================= MAIN CONTENT ================= */}
-                {/* ✅ FIXED: Added specific top-padding controls to perfectly match the sidebar height bounds */}
+                {/*  Added specific top-padding controls to perfectly match the sidebar height bounds */}
                 <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0 pt-6 md:pt-8">
                     <div className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
 

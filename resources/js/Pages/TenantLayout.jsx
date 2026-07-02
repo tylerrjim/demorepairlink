@@ -65,7 +65,7 @@ export default function TenantLayout({ children, header }) {
             <div className="flex flex-1 pt-16">
                 {/* 🧭 VERTICAL LEFT SIDEBAR PANELS */}
                 <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 fixed h-[calc(100vh-64px)] hidden md:block p-4 space-y-1.5">
-                    {/* ✅ REMOVED NAVIGATION MENU LABEL TEXT TRACE FOR CLEAN DESIGN LOOKS */}
+                    {/*  REMOVED NAVIGATION MENU LABEL TEXT TRACE FOR CLEAN DESIGN LOOKS */}
                     {navLinks.map((link) => {
                         const isActive = currentPath === link.href;
                         return (
