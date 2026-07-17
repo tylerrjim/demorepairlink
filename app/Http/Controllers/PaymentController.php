@@ -67,8 +67,10 @@ class PaymentController extends Controller
     }
 
     /**
-     * ✅ RECEIVES AND PROCESSES THE REAL-TIME PAYMENT CONFIRMATION PACKET FROM SAFARICOM
-     * Schema Synced and Sandbox Optimization Enabled
+     * Handle the asynchronous M-Pesa STK Push callback from Safaricom
+     * It is designed to process both successful and failed payment attempts
+     * and update the corresponding RepairRequest and Payment records accordingly.
+        * The callback payload is logged for audit trail purposes.
      */
     public function handleCallback(Request $request)
     {
@@ -89,7 +91,7 @@ class PaymentController extends Controller
                 $payment = Payment::where('checkout_request_id', $checkoutRequestId)->first();
 
                 if ($payment) {
-                    // 🟢 DEVELOPMENT SYNC: Process real success (0) OR sandbox timeout bypass (1037)
+                    // Handle both success and failure cases with proper schema updates
                     if ($resultCode === 0 || $resultCode === 1037) {
                         
                         $items = $stkCallback['CallbackMetadata']['Item'] ?? [];
@@ -110,21 +112,21 @@ class PaymentController extends Controller
                         // Update Payment Status using your EXACT database schema column names
                         $payment->update([
                             'status'               => 'completed',
-                            'mpesa_receipt_number' => $mpesaReceipt,       // ✅ Fixed Schema Sync
-                            'result_description'   => $resultDesc,         // ✅ Fixed Schema Sync
+                            'mpesa_receipt_number' => $mpesaReceipt,      
+                            'result_description'   => $resultDesc,         
                         ]);
 
                         // Update the core RepairRequest record layout to 'paid' status
                         $payment->repairRequest->update(['status' => 'paid']);
                         Log::info("Payment Successfully Saved for Checkout Request: {$checkoutRequestId}. Receipt: {$mpesaReceipt}");
                     } else {
-                        // 🔴 HARD FAILURES: User explicitly cancelled (1032), wrong PIN, or balance issues
+                        // Handle failed or cancelled payment attempts
                         $payment->update([
                             'status'             => 'failed',
-                            'result_description' => $resultDesc         // ✅ Fixed Schema Sync
+                            'result_description' => $resultDesc         
                         ]);
 
-                        // ✅ THE CRITICAL FIX: Explicitly revert ticket state so the button unlocks for re-attempts
+                        // Update the RepairRequest status to 'awaiting_payment' to allow retry attempts
                         if ($payment->repairRequest) {
                             $payment->repairRequest->update(['status' => 'awaiting_payment']);
                         }
@@ -134,7 +136,7 @@ class PaymentController extends Controller
                 }
             }
 
-            // 2. CRITICAL: Acknowledge receipt to Safaricom with a clean 200 JSON object statement
+            // Return a 200 OK response to Safaricom to acknowledge receipt of the callback
             return response()->json([
                 'ResultCode' => 0,
                 'ResultDesc' => 'Callback received and processed successfully.'

@@ -1,6 +1,6 @@
 import TenantLayout from './TenantLayout';
 import { Head, useForm } from '@inertiajs/react';
-import React from 'react';
+import React, { useState } from 'react';
 
 // Universal Icon Wrapper
 const Icon = ({ name, className = '' }) => (
@@ -10,13 +10,20 @@ const Icon = ({ name, className = '' }) => (
 );
 
 export default function CreateRequest() {
-    // Bound properties inside your form engine hook
+    // Local processing states for the HTML5 native GPS telemetry sensor
+    const [geoLoading, setGeoLoading] = useState(false);
+    const [geoSuccess, setGeoSuccess] = useState(false);
+
+    // Bound properties inside your form engine hook (Injected latitude & longitude keys)
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
         category: '',
         location: '',
+        landmark: '',         // Matches your model's existing landmark field
         scheduled_date: '',
+        latitude: null,       // 👈 Added to catch physical coordinates
+        longitude: null,      // 👈 Added to catch physical coordinates
     });
 
     function submit(e) {
@@ -24,12 +31,45 @@ export default function CreateRequest() {
         post('/requests');
     }
 
+    // 🛠️ BROWSER-NATIVE GEOLOCATION API HANDLER 
+    const captureGpsCoordinates = () => {
+        if (!navigator.geolocation) {
+            alert("Your browser or device does not support automatic location capturing.");
+            return;
+        }
+
+        setGeoLoading(true);
+        setGeoSuccess(false);
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                // Securely lock telemetry streams directly into the active form state dictionary
+                setData(prevData => ({
+                    ...prevData,
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                }));
+                setGeoLoading(false);
+                setGeoSuccess(true);
+            },
+            (error) => {
+                setGeoLoading(false);
+                // Graceful fallback option alert warning if policy blocks the popup hook
+                alert("Location access denied or unavailable. Please fill out your landmark details manually.");
+            },
+            { 
+                enableHighAccuracy: true, // Forces phone to use real hardware GPS instead of loose IP lookups
+                timeout: 10000 
+            }
+        );
+    };
+
     //  DYNAMIC CONFIGURATION: Strips current date to disable past selections in the calendar
     const todayString = new Date().toLocaleDateString('sv-SE', { timeZone: 'Africa/Nairobi' });
 
     return (
         <TenantLayout
-            header={
+            header = {
                 <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
                     File Maintenance Ticket
                 </h2>
@@ -110,17 +150,17 @@ export default function CreateRequest() {
                                 )}
                             </div>
 
-                            {/* Two-Column Grid: Location & Timeline Scheduling */}
+                            {/* 🛠️ MODIFIED LOCATION DATA ROW FOR HYBRID LOCATION HANDLING */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 
-                                {/* 4. Location Dispatch Details */}
+                                {/* 4a. Residential Estate Neighborhood Area */}
                                 <div className="space-y-1.5">
                                     <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Residential Estate Location
+                                        Residential Estate Area
                                     </label>
                                     <input
                                         type="text"
-                                        placeholder="e.g., Dagoretti North"
+                                        placeholder="e.g., Kawangware"
                                         value={data.location}
                                         onChange={e => setData('location', e.target.value)}
                                         className="w-full text-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border placeholder-gray-400 transition-colors"
@@ -130,24 +170,66 @@ export default function CreateRequest() {
                                     )}
                                 </div>
 
-                                {/* 5. Timeline Dispatch Schedule Date */}
+                                {/* 4b. Local Landmark Fallback Input Field */}
                                 <div className="space-y-1.5">
                                     <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                        Target Inspection Date
+                                        Nearest Landmark / Stage
                                     </label>
                                     <input
-                                        type="date"
-                                        //  FIXED: Calendar will gray out all dates before Africa/Nairobi current today metric
-                                        min={todayString}
-                                        value={data.scheduled_date}
-                                        onChange={e => setData('scheduled_date', e.target.value)}
-                                        className="w-full text-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-colors"
+                                        type="text"
+                                        placeholder="e.g., Stage 2, near Chief's office"
+                                        value={data.landmark}
+                                        onChange={e => setData('landmark', e.target.value)}
+                                        className="w-full text-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border placeholder-gray-400 transition-colors"
                                     />
-                                    {errors.scheduled_date && (
-                                        <p className="text-xs text-red-600 font-semibold mt-1">⚠️ {errors.scheduled_date}</p>
+                                    {errors.landmark && (
+                                        <p className="text-xs text-red-600 font-semibold mt-1">⚠️ {errors.landmark}</p>
                                     )}
                                 </div>
+                            </div>
 
+                            {/* 🛠️ NEW: BROWSER-INTEGRATED PHYSICAL LOCATION TELEMETRY BLOCK */}
+                            <div className="p-4 bg-slate-50 dark:bg-gray-900/50 border border-slate-100 dark:border-gray-700 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="space-y-0.5">
+                                    <h5 className="text-sm font-bold text-gray-800 dark:text-white flex items-center gap-1">
+                                        <Icon name="my_location" className="text-blue-500 text-base" />
+                                        Pin Exact Coordinates
+                                    </h5>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Help the contractor navigate straight to your doorstep without getting lost.
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={captureGpsCoordinates}
+                                    disabled={geoLoading}
+                                    className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap border ${
+                                        geoSuccess 
+                                            ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50' 
+                                            : 'bg-blue-600 hover:bg-blue-700 text-white border-transparent shadow-sm active:scale-95 disabled:opacity-60'
+                                    }`}
+                                >
+                                    <Icon name={geoSuccess ? "check_circle" : geoLoading ? "sync" : "location_on"} className={geoLoading ? "animate-spin" : ""} />
+                                    {geoLoading ? 'Fetching GPS...' : geoSuccess ? '✓ Coordinates Captured' : 'Use My Current Location'}
+                                </button>
+                            </div>
+
+                            {/* 5. Timeline Dispatch Schedule Date */}
+                            <div className="space-y-1.5">
+                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Target Inspection Date
+                                </label>
+                                <input
+                                    type="date"
+                                    min={todayString}
+                                    value={data.scheduled_date}
+                                    onChange={e => setData('scheduled_date', e.target.value)}
+                                    className="w-full text-sm border-gray-200 dark:border-gray-700 dark:bg-gray-900 text-gray-900 dark:text-white rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-colors"
+                                />
+                                {errors.scheduled_date && (
+                                    <p className="text-xs text-red-600 font-semibold mt-1">⚠️ {errors.scheduled_date}</p>
+                                )}
                             </div>
 
                             {/* ================= SUBMISSION BUTTON INTERACTION ================= */}

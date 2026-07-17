@@ -33,12 +33,12 @@ class ContractorRegisterController extends Controller
 
         // 3. Persist the core User identity record mapping the file storage string pointer path
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'contractor',
-            'status' => 'pending',
-            'cv_path' => $path // ✅ Persists the text reference path to the database users table layout
+            'name' => $request->name,// Validates and stores the name
+            'email' => $request->email,// Validates and stores the email address
+            'password' => Hash::make($request->password),// Hashes the password for secure storage
+            'role' => 'contractor',// Explicitly sets the role to contractor for this registration flow
+            'status' => 'pending',// Sets the initial status to pending for admin approval
+            'cv_path' => $path // Stores the relative path to the uploaded CV in the users table
         ]);
 
         // 4. Create the nested relational Contractor Profile breakdown

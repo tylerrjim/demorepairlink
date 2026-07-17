@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\RepairRequest;
-use App\Models\Review; // ✅ IMPORTED REVIEW MODEL
+use App\Models\Review; 
 use Inertia\Inertia;
 
 class RepairRequestController extends Controller
@@ -19,24 +19,31 @@ class RepairRequestController extends Controller
         }
 
         $data = $request->validate([
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'category' => 'required|string',
-            'location' => 'required',
-            // ✅ FIXED: Enforces that the selected date must be today or a future date
-            'scheduled_date' => 'required|date|after_or_equal:today',
+            'title'          => 'required|string', //title of the repair request
+            'description'    => 'required|string', //detailed description of the repair request
+            'category'       => 'required|string', //category of the repair request (e.g., plumbing, electrical)
+            'location'       => 'required', // physical address or GPS coordinates of the repair location
+            'landmark'       => 'nullable|string', // optional neighborhood landmark for easier identification
+            'scheduled_date' => 'required|date|after_or_equal:today', // the date when the repair is scheduled to be done
+            'latitude'       => 'nullable|numeric|between:-90,90', // GPS latitude
+            'longitude'      => 'nullable|numeric|between:-180,180', // GPS longitude
         ]);
 
         $repair = RepairRequest::create([
-            'user_id' => auth()->id(),
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'location' => $request->location,
-            'scheduled_date' => $request->scheduled_date,
-            'category' => $data['category'],
-            'status' => 'pending',
+            'user_id'        => auth()->id(), // the ID of the currently authenticated tenant
+            'title'          => $data['title'],//title of the repair request
+            'description'    => $data['description'], //detailed description of the repair request
+            'location'       => $request->location, // physical address or GPS coordinates of the repair location
+            'landmark'       => $request->landmark,  // optional neighborhood landmark for easier identification
+            'scheduled_date' => $request->scheduled_date, // the date when the repair is scheduled to be done
+            'category'       => $data['category'], // category of the repair request (e.g., plumbing, electrical)
+            'status'         => 'pending', // initial status of the repair request
+            'latitude'       => $data['latitude'] ?? null, // Added for GPS integration
+            'longitude'      => $data['longitude'] ?? null, // Added for GPS integration
         ]);
 
+
+        // Redirect the tenant to the contractor selection page for this newly created repair request
         return redirect("/select-contractor/{$repair->id}");
     }
 
@@ -45,7 +52,7 @@ class RepairRequestController extends Controller
      */
     public function myRequests()
     {
-        // Added 'review' relation to the eager-loading array to track feedback status
+        // 1. Fetch all repair requests for the logged-in tenant, including related contractor, user, and review data
         $requests = RepairRequest::with(['contractor', 'user', 'review'])
             ->where('user_id', auth()->id())
             ->latest()
@@ -71,13 +78,13 @@ class RepairRequestController extends Controller
             ->latest()
             ->get();
 
-        // 2. ✅ UPDATED FOR STEP 5: Fetch reviews left by tenants with their corresponding user rows
+        // 2. Fetch reviews for this contractor to display feedback and ratings
         $reviews = Review::with('tenant')
             ->where('contractor_id', auth()->id())
             ->latest()
             ->get();
 
-        // 3. ✅ UPDATED FOR STEP 5: Render the dashboard workspace view passing all critical aggregate indicators
+        // 3. Render the contractor dashboard with both requests and reviews, including the average rating calculated from the User model accessor
         return Inertia::render('Contractor/Dashboard', [
             'requests'       => $requests,
             'reviews'        => $reviews,
@@ -302,7 +309,7 @@ class RepairRequestController extends Controller
     }
 
     /**
-     * ✅ NEW FEATURE: Handle a contractor backing out/withdrawing during the live site inspection phase.
+     * Handle a contractor backing out/withdrawing during the live site inspection phase.
      * Reverts the system ticket back to public pending status pools for tenant re-selection.
      */
     public function withdrawFromInspection($id)

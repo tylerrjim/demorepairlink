@@ -79,31 +79,59 @@ export default function ContractorsList({ auth, contractors = [], pending_approv
                                 activeContractors.map((contractor) => (
                                     <div 
                                         key={contractor.id} 
-                                        className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex items-center justify-between"
+                                        className="bg-white dark:bg-gray-800 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-14 h-14 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0 mt-1">
                                                 <Icon name="verified" className="text-2xl" />
                                             </div>
-                                            <div>
-                                                <h4 className="text-lg font-bold text-gray-900 dark:text-white">{contractor.name}</h4>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono mt-0.5">{contractor.email}</p>
+                                            <div className="space-y-1">
+                                                <h4 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{contractor.name}</h4>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium font-mono">{contractor.email}</p>
                                                 
-                                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                                                    <span className="flex items-center gap-1 font-mono font-bold text-gray-700 dark:text-gray-300">
-                                                        📱 {contractor.phone || 'No Phone Registered'}
-                                                    </span>
-                                                    <span>•</span>
-                                                    <span className="capitalize px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-semibold text-gray-600 dark:text-gray-400">
-                                                        🛠️ {contractor.category || 'General Maintenance'}
-                                                    </span>
-                                                </div>
+                                                {/* 🛠️ RENDER COMPREHENSIVE RECRUITMENT DETAILS */}
+                                                {contractor.contractor_profile ? (
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1.5 text-xs text-gray-600 dark:text-gray-300 font-medium">
+                                                        <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-md capitalize font-semibold">
+                                                            <Icon name="construction" className="text-xs !text-sm text-gray-400" />
+                                                            {contractor.contractor_profile.trade}
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1 bg-slate-100 dark:bg-gray-700 px-2 py-0.5 rounded-md font-semibold">
+                                                            <Icon name="history_edu" className="text-xs !text-sm text-gray-400" />
+                                                            {contractor.contractor_profile.years_of_experience} Yrs Exp
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1 font-mono text-gray-500 dark:text-gray-400">
+                                                            <Icon name="call" className="text-xs !text-sm text-gray-400" />
+                                                            {contractor.contractor_profile.phone}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-red-400 italic pt-1">⚠️ Profile dataset mapping broken</p>
+                                                )}
+
+                                                {/* DEDICATED ATTACHMENT ACCESS ROUTE */}
+                                                {contractor.cv_path && (
+                                                    <div className="pt-2">
+                                                        <a 
+                                                            href={`/storage/${contractor.cv_path}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                                                        >
+                                                            <Icon name="description" className="text-xs !text-sm" />
+                                                            View Verified Credentials
+                                                        </a>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         
-                                        <span className="hidden sm:inline-block px-3 py-1.5 text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200/40 rounded-lg tracking-wider">
-                                            Active Profile
-                                        </span>
+                                        <div className="shrink-0 self-start sm:self-auto pl-18 sm:pl-0">
+                                            <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold uppercase rounded-full tracking-wider bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200/40 text-emerald-700 dark:text-emerald-400">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                Active
+                                            </span>
+                                        </div>
                                     </div>
                                 ))
                             ) : (

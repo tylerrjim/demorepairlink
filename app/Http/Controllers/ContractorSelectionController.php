@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\RepairRequest;
-use App\Models\Review; // ✅ IMPORTED REVIEW MODEL TO COMPUTE RATINGS
+use App\Models\Review;
 use Inertia\Inertia;
 
 class ContractorSelectionController extends Controller
@@ -22,7 +22,7 @@ class ContractorSelectionController extends Controller
             })
             ->get()
             ->map(function ($contractor) {
-                // ✅ DYNAMICALLY CALCULATE ROLLING AVERAGE RATING FROM THE REVIEWS TABLE
+                // Calculate the average rating for each contractor and attach it as a property
                 $contractor->average_rating = Review::where('contractor_id', $contractor->id)
                     ->avg('rating') ?? 0;
                 return $contractor;
@@ -38,7 +38,7 @@ class ContractorSelectionController extends Controller
     {
         $repair = RepairRequest::findOrFail($id);
 
-        // ✅ CONCURRENCY SAFETY GUARD: Prevents double-assignment state locking from concurrent requests
+        // Ensure that the repair request is still pending and has not been assigned yet
         if ($repair->contractor_id !== null) {
             return redirect('/dashboard')
                 ->with('error', 'A specialist has already been booked for this maintenance request.');

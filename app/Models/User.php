@@ -18,12 +18,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',
-        'status',
-        'phone', 
+        'name', // The user's name
+        'email', // The user's email address
+        'password', // The user's password (hashed)
+        'role', // The user's role (e.g., admin, contractor, tenant)
+        'status', // The user's account status (e.g., active, pending, suspended)
+        'phone', // The user's phone number
         'cv_path', // Added phone to fillable attributes
     ];
 
@@ -33,8 +33,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
-        'remember_token',
+        'password', // The user's password (hidden for security)
+        'remember_token', // Token used for "remember me" functionality (hidden for security)
     ];
 
     /**
@@ -45,21 +45,23 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at' => 'datetime', // Casts the email_verified_at attribute to a Carbon datetime instance
+            'password' => 'hashed', // Casts the password attribute to a hashed value for security
         ];
     }
 
+// Relationship: A user can have one contractor profile (if they are a contractor).
     public function contractorProfile()
 {
     return $this->hasOne(ContractorProfile::class);
 }
 
+// Custom methods to check user roles and statuses
 public function isAdmin(): bool
 {
     return $this->role === 'admin';
 }
-
+// Custom methods to check user roles and statuses
 public function isContractor(): bool
 {
     return $this->role === 'contractor';

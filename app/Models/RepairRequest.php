@@ -21,6 +21,8 @@ class RepairRequest extends Model
         'status',
         'agreed_price',
         'price_confirmed_at',
+        'latitude',          // 👈 Added for GPS integration
+        'longitude',         // 👈 Added for GPS integration
     ];
 
     /**
