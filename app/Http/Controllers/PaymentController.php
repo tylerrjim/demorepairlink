@@ -21,12 +21,13 @@ class PaymentController extends Controller
     /**
      * Initiate the M-Pesa STK Push payment request sequence
      */
-    public function initiatePayment($id)
+    public function initiatePayment(Request $request, $id)
     {
         // 1. Fetch the request and ensure it belongs to the logged-in tenant
         $repairRequest = RepairRequest::findOrFail($id);
+        $user = auth()->user();
 
-        if ($repairRequest->user_id !== auth()->id()) {
+        if ($repairRequest->user_id !== $user->id) {
             abort(403, 'Unauthorized transaction footprint.');
         }
 
@@ -35,21 +36,39 @@ class PaymentController extends Controller
             return back()->with('error', 'This repair request has already been settled.');
         }
 
-        // 3. Extract the tenant's profile phone number and the agreed quotation price
-        $phone = $repairRequest->user->phone; 
-        $amount = $repairRequest->agreed_price;
+        // 3. Resolve Phone: Prioritize submitted override, fallback directly to auth()->user()->phone
+        $rawPhone = $request->filled('phone') ? $request->input('phone') : $user->phone;
 
-        if (!$phone) {
-            return back()->with('error', 'No registered phone number bound to your account profile.');
+        if (!$rawPhone) {
+            return back()->with('error', 'No registered phone number found on your account profile.');
+        }
+
+        // Sanitize and format to Safaricom 254... standard
+        $phone = preg_replace('/[^0-9]/', '', (string) $rawPhone);
+        if (str_starts_with($phone, '0')) {
+            $phone = '254' . substr($phone, 1);
+        } elseif (str_starts_with($phone, '+254')) {
+            $phone = substr($phone, 1);
+        }
+
+        // Validate Kenyan mobile format (07... or 01... lines in 254 standard)
+        if (!preg_match('/^254[71]\d{8}$/', $phone)) {
+            return back()->with('error', "The phone number ({$rawPhone}) is not a valid Safaricom mobile line.");
+        }
+
+        $amount = (int) $repairRequest->agreed_price;
+
+        if ($amount < 1) {
+            return back()->with('error', 'Invalid repair amount specified for M-Pesa transaction.');
         }
 
         // 4. Fire the STK Push request out via our MpesaService wrapper engine
         $response = $this->mpesaService->initiateStkPush($phone, $amount, $repairRequest->id);
 
-        if ($response['success']) {
-            $responseData = $response['data'];
+        if (!empty($response['success'])) {
+            $responseData = $response['data'] ?? [];
 
-            // 5. Audit trail log: Save an 'initiated' record into your new payments table
+            // 5. Audit trail log: Save record targeting the exact line authorized
             Payment::create([
                 'repair_request_id'   => $repairRequest->id,
                 'amount'              => $amount,
@@ -59,18 +78,18 @@ class PaymentController extends Controller
                 'status'              => 'initiated',
             ]);
 
-            return back()->with('success', 'STK Push confirmation prompt dispatched to your handset.');
+            return back()->with('success', "STK Push confirmation prompt dispatched to {$phone}.");
         }
 
-        // Return error message if Safaricom rejects the initial payload handshake
-        return back()->with('error', $response['message']);
+        // Safaricom API returned an explicit error response
+        $errorMessage = $response['message'] ?? 'Failed to initiate STK push with Safaricom gateway.';
+        Log::error("Daraja STK push initiation failed for Request #{$id}: {$errorMessage}");
+
+        return back()->with('error', $errorMessage);
     }
 
     /**
      * Handle the asynchronous M-Pesa STK Push callback from Safaricom
-     * It is designed to process both successful and failed payment attempts
-     * and update the corresponding RepairRequest and Payment records accordingly.
-        * The callback payload is logged for audit trail purposes.
      */
     public function handleCallback(Request $request)
     {
@@ -91,9 +110,8 @@ class PaymentController extends Controller
                 $payment = Payment::where('checkout_request_id', $checkoutRequestId)->first();
 
                 if ($payment) {
-                    // Handle both success and failure cases with proper schema updates
+                    // Handle both success and simulated success cases with proper schema updates
                     if ($resultCode === 0 || $resultCode === 1037) {
-                        
                         $items = $stkCallback['CallbackMetadata']['Item'] ?? [];
                         $mpesaReceipt = null;
 
@@ -109,11 +127,11 @@ class PaymentController extends Controller
                             $mpesaReceipt = 'MOCK' . strtoupper(substr(md5(uniqid()), 0, 7));
                         }
 
-                        // Update Payment Status using your EXACT database schema column names
+                        // Update Payment Status using your database schema column names
                         $payment->update([
                             'status'               => 'completed',
-                            'mpesa_receipt_number' => $mpesaReceipt,      
-                            'result_description'   => $resultDesc,         
+                            'mpesa_receipt_number' => $mpesaReceipt,
+                            'result_description'   => $resultDesc,
                         ]);
 
                         // Update the core RepairRequest record layout to 'paid' status
@@ -123,7 +141,7 @@ class PaymentController extends Controller
                         // Handle failed or cancelled payment attempts
                         $payment->update([
                             'status'             => 'failed',
-                            'result_description' => $resultDesc         
+                            'result_description' => $resultDesc,
                         ]);
 
                         // Update the RepairRequest status to 'awaiting_payment' to allow retry attempts
@@ -139,7 +157,7 @@ class PaymentController extends Controller
             // Return a 200 OK response to Safaricom to acknowledge receipt of the callback
             return response()->json([
                 'ResultCode' => 0,
-                'ResultDesc' => 'Callback received and processed successfully.'
+                'ResultDesc' => 'Callback received and processed successfully.',
             ], 200);
 
         } catch (\Exception $e) {
@@ -147,7 +165,7 @@ class PaymentController extends Controller
 
             return response()->json([
                 'ResultCode' => 1,
-                'ResultDesc' => 'Internal processing loop crash.'
+                'ResultDesc' => 'Internal processing loop crash.',
             ], 500);
         }
     }

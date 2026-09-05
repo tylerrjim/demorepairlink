@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\ContractorApprovedNotification;
+use App\Notifications\ContractorRejectedNotification;
 use Inertia\Inertia;
 
 class ContractorApprovalController extends Controller
@@ -64,6 +66,9 @@ class ContractorApprovalController extends Controller
         $user->status = 'active'; 
         $user->save();
 
+        // Dispatch approval email to the contractor
+        $user->notify(new ContractorApprovedNotification());
+
         return redirect()->back();
     }
 
@@ -74,6 +79,9 @@ class ContractorApprovalController extends Controller
     {
         $user->status = 'rejected';
         $user->save();
+
+        // Dispatch rejection email to the contractor
+        $user->notify(new ContractorRejectedNotification());
 
         return redirect()->back();
     }

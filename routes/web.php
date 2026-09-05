@@ -8,6 +8,8 @@ use App\Http\Controllers\ContractorSelectionController;
 use App\Http\Controllers\PaymentController; 
 use App\Http\Controllers\ReviewController;  
 use App\Models\User; 
+use App\Models\Payment; 
+use App\Models\RepairRequest; 
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -48,13 +50,34 @@ Route::get('/dashboard', function () {
     }
 
     if ($user->role === 'admin') {
-        // Count pending contractors for the sidebar notification badge
-        $pendingCount = User::where('role', 'contractor')
+        $pendingContractors = User::where('role', 'contractor')
             ->where('status', 'pending')
+            ->latest()
+            ->get();
+
+        $approvedCount = User::where('role', 'contractor')
+            ->whereIn('status', ['approved', 'active'])
             ->count();
 
+        $tenantCount = User::where('role', 'tenant')->count();
+
+        $settledRevenue = Payment::where('status', 'completed')->sum('amount');
+
+        $recentRequests = RepairRequest::with(['user:id,name', 'contractor:id,name'])
+            ->latest()
+            ->take(8)
+            ->get();
+
         return Inertia::render('Admin/Dashboard', [
-            'pending_approvals_count' => $pendingCount
+            'stats' => [
+                'total_tenants'       => $tenantCount,
+                'total_contractors'   => $approvedCount,
+                'pending_approvals'   => $pendingContractors->count(),
+                'total_revenue'       => (float) $settledRevenue,
+            ],
+            'pending_contractors'     => $pendingContractors,
+            'repair_requests'         => $recentRequests,
+            'pending_approvals_count' => $pendingContractors->count(),
         ]);
     }
 })->middleware(['auth'])->name('dashboard');
@@ -67,6 +90,7 @@ Route::middleware('auth')->group(function () {
 });
 
 /*
+|--------------------------------------------------------------------------
 | Admin Routes (Contractor Approvals & Vetting)
 |--------------------------------------------------------------------------     
 */
@@ -90,7 +114,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 /*
+|--------------------------------------------------------------------------
 | Contractor Registration
+|--------------------------------------------------------------------------
 */
 
 // Signup pages for new contractors

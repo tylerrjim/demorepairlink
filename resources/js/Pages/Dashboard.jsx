@@ -1,4 +1,4 @@
-import TenantLayout from './TenantLayout'; //  SWAPPED AND FIXED PATH
+import TenantLayout from './TenantLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
@@ -17,7 +17,7 @@ export default function Dashboard() {
         <TenantLayout
             header={
                 <h2 className="text-xl font-bold leading-tight text-gray-800 dark:text-gray-200">
-                    Tenant Hub Dashboard
+                    Tenant Dashboard
                 </h2>
             }
         >
@@ -29,7 +29,7 @@ export default function Dashboard() {
                     {/* ================= WELCOME HERO BANNER ================= */}
                     <div className="mb-8 p-6 sm:p-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl shadow-md text-white">
                         <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                            Welcome Back, {user.name}! 🛠️
+                            Welcome Back, {user.name}!
                         </h3>
                         <p className="text-blue-100 text-sm sm:text-base mt-2 max-w-xl">
                             Request certified maintenance specialists, track open repair listings, and manage your residential setups seamlessly.

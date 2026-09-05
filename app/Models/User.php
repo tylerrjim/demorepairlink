@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\ContractorProfile;
+use App\Models\Review;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -24,7 +26,7 @@ class User extends Authenticatable
         'role', // The user's role (e.g., admin, contractor, tenant)
         'status', // The user's account status (e.g., active, pending, suspended)
         'phone', // The user's phone number
-        'cv_path', // Added phone to fillable attributes
+        'cv_path', // Added cv_path to fillable attributes
     ];
 
     /**
@@ -50,35 +52,47 @@ class User extends Authenticatable
         ];
     }
 
-// Relationship: A user can have one contractor profile (if they are a contractor).
+    // Relationship: A user can have one contractor profile (if they are a contractor).
     public function contractorProfile()
-{
-    return $this->hasOne(ContractorProfile::class);
-}
+    {
+        return $this->hasOne(ContractorProfile::class);
+    }
 
-// Custom methods to check user roles and statuses
-public function isAdmin(): bool
-{
-    return $this->role === 'admin';
-}
-// Custom methods to check user roles and statuses
-public function isContractor(): bool
-{
-    return $this->role === 'contractor';
-}
+    // Relationship: Reviews received by this contractor from tenants
+    public function reviewsReceived()
+    {
+        return $this->hasMany(Review::class, 'contractor_id');
+    }
 
-public function isTenant(): bool
-{
-    return $this->role === 'tenant';
-}
+    // Accessor: Dynamically calculates auth()->user()->average_rating
+    public function getAverageRatingAttribute(): float
+    {
+        return (float) round($this->reviewsReceived()->avg('rating') ?? 0, 1);
+    }
 
-public function isPending(): bool
-{
-    return $this->status === 'pending';
-}
+    // Custom methods to check user roles and statuses
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
 
-public function isApproved(): bool
-{
-    return $this->status === 'active';
-}
+    public function isContractor(): bool
+    {
+        return $this->role === 'contractor';
+    }
+
+    public function isTenant(): bool
+    {
+        return $this->role === 'tenant';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'active';
+    }
 }

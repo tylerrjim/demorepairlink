@@ -9,6 +9,9 @@ class Review extends Model
 {
     use HasFactory;
 
+    // Table uses composite keys (tenant_id, contractor_id) rather than an auto-incrementing id
+    public $incrementing = false;
+
     protected $fillable = [
         'repair_request_id',
         'tenant_id',

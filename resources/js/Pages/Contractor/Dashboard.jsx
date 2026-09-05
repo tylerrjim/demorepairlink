@@ -11,7 +11,7 @@ const Icon = ({ name, className = '' }) => (
 );
 
 // Main Component
-export default function ContractorDashboard({ requests, reviews = [], average_rating = 'No ratings yet' }) {
+export default function ContractorDashboard({ requests = [], reviews = [], average_rating = 0 }) {
 
     // Sidebar active state tabs: 'Dashboard', 'My Requests', 'Active Jobs', or 'Reviews Feedback'
     const [activeTab, setActiveTab] = useState('Dashboard');
@@ -36,6 +36,11 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
         router.post(`/requests/${id}/start`);
     }
 
+    // Complete repair job action
+    function complete(id) {
+        router.post(`/requests/${id}/complete`);
+    }
+
     // Workflow Trigger: Triggers backing out of a request during inspection or acceptance phase
     function withdraw(id) {
         if (confirm("Are you sure you want to withdraw from this inspection? The request will return to the open pool so the tenant can select an alternate contractor.")) {
@@ -56,28 +61,25 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
     // Sidebar Filter Logic: Restricts the requests loop dynamically based on the active navbar tab
     const getFilteredRequests = () => {
         if (activeTab === 'My Requests') {
-            // New requests where the contractor needs to act (Accept or Decline)
             return requests.filter(r => r.status === 'pending');
         }
         if (activeTab === 'Active Jobs') {
-            // Jobs where work is actively underway or ongoing
             return requests.filter(r => ['accepted', 'inspection', 'price_pending_confirmation', 'in_progress', 'awaiting_confirmation', 'awaiting_payment'].includes(r.status));
         }
-        // 'Dashboard' tab displays everything for a full historical overview
         return requests;
     };
 
     const filteredRequests = getFilteredRequests();
 
+    // Formatted average rating display
+    const formattedRating = Number(average_rating) > 0 ? Number(average_rating).toFixed(1) : 'No ratings yet';
+
     return (
         <AuthenticatedLayout
-            // ✅ FIXED: Removed the dual parent page header property assignment string block 
-            // to eliminate the duplicate vertical spacing gap at the top of the viewport.
             user={router.page?.props?.auth?.user}
         >
             <Head title="Contractor Dashboard" />
 
-            {/* ✅ FIXED: Adjusted the layout container flow with absolute padding alignment boundaries */}
             <div className="bg-[#f7f9fb] text-[#191c1e] font-sans min-h-screen flex flex-col md:flex-row pt-16 md:pt-0">
 
                 {/* ================= SIDEBAR ================= */}
@@ -94,7 +96,7 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                             { name: 'Dashboard', icon: 'dashboard' },
                             { name: 'My Requests', icon: 'assignment' },
                             { name: 'Active Jobs', icon: 'pending_actions' },
-                            { name: 'Reviews Feedback', icon: 'star' }, // ✅ FIXED: Wrapped in quotes to resolve hidden crash
+                            { name: 'Reviews Feedback', icon: 'star' },
                         ].map((item) => (
                             <button
                                 key={item.name}
@@ -113,7 +115,6 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                 </aside>
 
                 {/* ================= MAIN CONTENT ================= */}
-                {/* ✅ FIXED: Added specific top-margin and padding control to line up flush with the sidebar */}
                 <main className="flex-1 md:ml-[280px] min-h-screen flex flex-col pb-20 md:pb-0 pt-6 md:pt-8">
                     <div className="flex-1 p-4 md:p-8 max-w-[1440px] mx-auto w-full">
 
@@ -162,19 +163,18 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                 <div className={`bg-white p-4 rounded-xl border-l-4 border-amber-500 shadow h-full ${activeTab === 'Reviews Feedback' ? 'ring-2 ring-amber-400' : ''}`}>
                                     <p className="text-xs font-semibold text-[#434655] uppercase">Reputation Score</p>
                                     <h3 className="text-2xl font-bold mt-1 flex items-center gap-1 text-amber-600">
-                                        ⭐ {average_rating}
+                                        ⭐ {formattedRating}
                                     </h3>
                                 </div>
                             </button>
                         </section>
 
                         {/* ================= CONDITIONAL CONTENT VIEWS ================= */}
-                        
                         {activeTab === 'Reviews Feedback' ? (
                             /* Reviews Tab View List */
                             <section className="space-y-4">
                                 <h4 className="text-xl font-semibold text-[#191c1e] mb-4">
-                                    Customer Feedback & Testimonials
+                                    Customer Feedback & Testimonials ({reviews.length})
                                 </h4>
                                 {reviews.length === 0 ? (
                                     <p className="text-sm text-gray-500 italic bg-white p-6 rounded-xl border shadow">
@@ -182,7 +182,7 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                     </p>
                                 ) : (
                                     reviews.map((rev) => (
-                                        <div key={rev.id} className="bg-white p-5 rounded-xl border shadow-sm space-y-2">
+                                        <div key={`${rev.tenant_id}-${rev.contractor_id}`} className="bg-white p-5 rounded-xl border shadow-sm space-y-2">
                                             <div className="flex items-center justify-between">
                                                 <span className="font-bold text-sm text-gray-800">👤 Tenant: {rev.tenant?.name || 'Anonymous'}</span>
                                                 <span className="text-amber-500 font-bold text-sm">
@@ -241,12 +241,12 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                                             <div className="flex items-center gap-1"><Icon name="calendar_today" className="text-gray-400 text-base" />{req.scheduled_date}</div>
                                                         </div>
 
-                                                        {/* ================= 🛠️ GPS MAP ROUTING LAYER ================= */}
+                                                        {/* GPS Map Routing Layer */}
                                                         {req.status !== 'pending' && (
                                                             <div className="pt-2 max-w-md">
                                                                 {req.latitude && req.longitude ? (
                                                                     <a 
-                                                                        href={`https://www.google.com/maps/search/?api=1&query=${req.latitude},${req.longitude}`} // ✅ FIXED: Dynamic interpolation structure fixed
+                                                                        href={`https://www.google.com/maps/search/?api=1&query=${req.latitude},${req.longitude}`}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-sm transition-transform active:scale-95 border border-slate-900"
@@ -263,7 +263,7 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                                             </div>
                                                         )}
 
-                                                        {/* Privacy-Bound Client Contact Panel */}
+                                                        {/* Client Contact Panel */}
                                                         {req.status !== 'pending' && req.status !== 'completed' && req.status !== 'paid' && req.status !== 'cancelled' && (
                                                             <div className="mt-4 p-2.5 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between max-w-md shadow-sm">
                                                                 <div>
@@ -297,7 +297,6 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                                             </>
                                                         )}
                                                         
-                                                        {/* Incorporated withdrawal trigger for accepted lifecycle state */}
                                                         {req.status === 'accepted' && (
                                                             <div className="flex flex-col sm:flex-row gap-2">
                                                                 <button onClick={() => start(req.id)} className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap">Start Site Inspection</button>
@@ -305,7 +304,6 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                                             </div>
                                                         )}
                                                         
-                                                        {/* Incorporated withdrawal trigger for active inspection state */}
                                                         {req.status === 'inspection' && (
                                                             <div className="flex flex-col gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
                                                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -331,21 +329,25 @@ export default function ContractorDashboard({ requests, reviews = [], average_ra
                                                                 <p className="text-xs text-gray-500 font-normal mt-0.5">Awaiting tenant price confirmation</p>
                                                             </div>
                                                         )}
+
                                                         {req.status === 'in_progress' && (
                                                             <div className="flex flex-col sm:flex-row items-end sm:items-center gap-4">
                                                                 <span className="text-sm font-semibold text-gray-600">Cost: KES {req.agreed_price}</span>
                                                                 <button onClick={() => complete(req.id)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors shadow-sm">Mark as Finished</button>
                                                             </div>
                                                         )}
+
                                                         {req.status === 'awaiting_confirmation' && (
                                                             <p className="text-sm text-purple-600 bg-purple-50 px-4 py-2 rounded-lg border border-purple-100 italic">Waiting for tenant completion sign-off</p>
                                                         )}
+
                                                         {req.status === 'awaiting_payment' && (
                                                             <div className="text-right text-sm font-semibold text-pink-600 bg-pink-50 px-4 py-2 rounded-lg border border-pink-100">
                                                                 <p>Work Verified</p>
                                                                 <p className="text-xs text-gray-500 font-normal mt-0.5">Awaiting M-Pesa Settlement: KES {req.agreed_price}</p>
                                                             </div>
                                                         )}
+
                                                         {(req.status === 'completed' || req.status === 'paid') && (
                                                             <div className="text-right text-sm font-semibold text-green-600">
                                                                 <p>Job completed</p>
